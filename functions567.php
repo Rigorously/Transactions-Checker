@@ -126,16 +126,16 @@ function getNameFromAddress($address) {
 
 // Returns a Player object associated with the specified Namada address, or creates and returns a new Player object if not found
 function getPlayerFromAddress($address) {
-  global $addressToName;
+  global $addressToPlayer;
 
-  if (!isset($addressToName[$address])) {
-     $player = new Player();
+  if (!isset($addressToPlayer[$address])) {
+    $player = new Player();
     $player->address = $address;
-    $player->name = "n/a";
-    $addressToName[$address] = $player;
+    $player->name = $address;
+    $addressToPlayer[$address] = $player;
   }
 
-  return $addressToName[$address];
+  return $addressToPlayer[$address];
 }
 
 ?>
