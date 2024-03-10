@@ -12,6 +12,7 @@ $run_mode = $mode;
 
 // Initialize an empty hash map
 $addressToName = [];
+$addressToPlayer = [];
 
 // Load player.csv into an address<->name lookup table
 loadPlayerData();
@@ -245,8 +246,8 @@ while ($line = pg_fetch_array($results, null, PGSQL_ASSOC)) {
 	if ($col_value != $address and validate_tnam1($col_value)) {
 	   echo(hyperlink_address($col_value, 'transactions'));
 	} elseif ($col_value == $address) {
-     $name = getNameFromAddress($address);
-     echo ("<div style=\"color: grey\">$name</div>");
+     $player = getPlayerFromAddress($address);
+     echo ("<div style=\"color: grey\">{$player->name}</div>");
 	} else {
 	  echo($col_value);
 	}

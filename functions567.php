@@ -50,9 +50,9 @@ function hyperlink_address($in, $mode_arg) {
   $parts = explode('?', $uri);
   $uri = array_shift($parts);
   $servername = strip_all($_SERVER['HTTP_HOST']);
-  $name = getNameFromAddress($in);
+  $player = getPlayerFromAddress($in);
   $newlink = '//' . $servername . $uri . '?address=' . $in . '&mode=' . $mode_arg;
-  $returnstring = '<a href="' . $newlink . '" style="text-decoration: none">' . $name . '</a>';
+  $returnstring = '<a href="' . $newlink . '" style="text-decoration: none">' . $player->name . '</a>';
   return $returnstring;
 }
 
@@ -66,8 +66,17 @@ function hyperlink_proposal($in, $mode_arg) {
   return $returnstring;
 }
 
+class Player {
+  public $name;
+  public $address;
+  public $publicKey;
+  public $score;
+  public $playerType;
+}
+
 function loadPlayerData() {
   global $addressToName;
+  global $addressToPlayer;
 
   $filename = 'players.csv';
   $file = fopen($filename, 'r');
@@ -81,9 +90,23 @@ function loadPlayerData() {
     // Assuming the CSV has two columns: address and name
     $name = $row[0];
     $address = $row[1];
+    $publicKey = $row[2];
+    $score = $row[3];
+    $playerType = $row[4];
 
     // Add the address and name to the hash map
     $addressToName[$address] = $name;
+
+    // Create a new Player object
+    $player = new Player();
+    $player->name = $name;
+    $player->address = $address;
+    $player->publicKey = $publicKey;
+    $player->score = $score;
+    $player->playerType = $playerType;
+
+    // Add Player object to lookup table
+    $addressToPlayer[$address] = $player;
   }
 
   // Close the file
@@ -99,6 +122,20 @@ function getNameFromAddress($address) {
   } else {
     return $address;
   }
+}
+
+// Returns a Player object associated with the specified Namada address, or creates and returns a new Player object if not found
+function getPlayerFromAddress($address) {
+  global $addressToName;
+
+  if (!isset($addressToName[$address])) {
+     $player = new Player();
+    $player->address = $address;
+    $player->name = "n/a";
+    $addressToName[$address] = $player;
+  }
+
+  return $addressToName[$address];
 }
 
 ?>
