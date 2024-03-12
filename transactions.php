@@ -1,13 +1,13 @@
 <?php include "includes567.php"; ?>
 <?php
 
-$address=strip_all($_GET["address"]);
-$mode=strip_all($_GET["mode"]);
-$ascdesc = strip_all($_GET["ascdesc"]);
-$from = strip_all($_GET["from"]);
-$to = strip_all($_GET["to"]);
-$sort = strip_all($_GET["sort"]);
-$range = strip_all($_GET["range"]);
+$address=strip_all($_GET["address"] ?? "");
+$mode=strip_all($_GET["mode"] ?? "");
+$ascdesc = strip_all($_GET["ascdesc"] ?? "");
+$from = strip_all($_GET["from"] ?? "");
+$to = strip_all($_GET["to"] ?? "");
+$sort = strip_all($_GET["sort"] ?? "");
+$range = strip_all($_GET["range"] ?? "");
 $run_mode = $mode;
 
 // Initialize an empty hash map
@@ -15,7 +15,7 @@ $addressToName = [];
 $addressToPlayer = [];
 
 // Load player.csv into an address<->name lookup table
-loadPlayerData();
+//loadPlayerData();
 
 //validate all inputs and reset the sht if anyone has tried passing badness
 if ( (!empty($address) and !validate_tnam1($address)) or (!empty($ascdesc) and $ascdesc !== 'asc' and $ascdesc !== 'desc') or (!empty($sort) and $sort !== '5' and $sort !== '2' and $sort !== '3' and $sort !== '4' and $sort !== '6' and $sort !== '7') or ($mode !== 'transactions' and $mode !== 'connected' and $mode !== 'num_transfers' and !empty($mode)) or (!empty($range) and $range !== 'num_incoming' and $range!== 'num_outgoing' and $range !== 'sum_incoming' and $range !== 'sum_outgoing' and $range !== 'wallets_outgoing' and $range !== 'wallets_incoming')  ) {
@@ -210,10 +210,17 @@ if ($run_mode === 'transactions') {
   $wallets_sent = pg_fetch_array($results6, null, PGSQL_NUM)[0];
   $wallets_received = pg_fetch_array($results7, null, PGSQL_NUM)[0];
 
-  echo("Wallet: <span style=\"\">$address</span><br>\n");
+  $player = getPlayerFromAddress($address);
+  
+  echo("Address: $address<br>\n");
+  if ($player->publicKey) echo("Public Key {$player->publicKey}<br>\n");
+  echo("Player type: {$player->playerType}<br>\n");
   echo("Transactions sent: $sent Transactions received: $received<br>\n");
   echo("Total amount sent: $sum_sent naan Total amount received: $sum_received naan<br>\n");
-  echo("Number of wallet sent to: $wallets_sent Number of wallets received from: $wallets_received<br><br>\n");
+  echo("Number of wallet sent to: $wallets_sent Number of wallets received from: $wallets_received<br>\n");
+  
+  $score = number_format($player->score);
+  echo("ROIDs: {$score}<br><br>\n");
   pg_free_result($results2); 
   pg_free_result($results3);
   pg_free_result($results4);

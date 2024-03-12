@@ -71,7 +71,7 @@ class Player {
   public $address;
   public $publicKey;
   public $score;
-  public $playerType;
+  public $playerType = "Unknown";
 }
 
 function loadPlayerData() {
@@ -128,6 +128,8 @@ function getNameFromAddress($address) {
 function getPlayerFromAddress($address) {
   global $addressToPlayer;
 
+  loadPlayerFromDatabase($address);
+
   if (!isset($addressToPlayer[$address])) {
     $player = new Player();
     $player->address = $address;
@@ -138,4 +140,21 @@ function getPlayerFromAddress($address) {
   return $addressToPlayer[$address];
 }
 
-?>
+function loadPlayerFromDatabase($address) {
+  global $addressToPlayer;
+
+  if (!isset($addressToPlayer[$address])) {
+    $result = pg_query_params('SELECT * FROM shielded_expedition.players WHERE address = $1 LIMIT 1', [$address]);
+    if ($result)
+    {
+      $obj = pg_fetch_object($result);
+      $player = new Player();
+      $player->address = $address;
+      $player->name = $obj->name ?? $address;
+      $player->publicKey = $obj->public_key ?? '';
+      $player->score = $obj->score ?? 0;
+      $player->playerType = $obj->player_type ?? $player->playerType;
+      $addressToPlayer[$address] = $player;
+    }
+  }
+}
