@@ -42,12 +42,14 @@ if ( (!empty($address) and !validate_tnam1($address)) or (!empty($ascdesc) and $
 <html>
 
 <head>
-
+<link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
 <style>
-
+body { 
+  display: block;
+  padding: 10px;
+}
 table, th, td {
-border: 1px solid;
-
+white-space: nowrap;
 }
 
 
