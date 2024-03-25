@@ -18,6 +18,16 @@ function validate_tnam1($in) {
   return preg_match($reg_tnam1, $in);
 }
 
+function validate_tpknam1($in) {
+  if (empty($in)) {
+    return false;
+  }    
+  strip_all($in);	
+  if (strlen($in) <> 66) {return false;}	
+  $reg_tpknam1 = '/tpknam1[a-zA-Z0-9]{59}$/i';	
+  return preg_match($reg_tpknam1, $in);
+}
+
 function validate_integer($in) {
   if (empty($in)) {
     return false;
@@ -130,13 +140,6 @@ function getPlayerFromAddress($address) {
 
   loadPlayerFromDatabase($address);
 
-  if (!isset($addressToPlayer[$address])) {
-    $player = new Player();
-    $player->address = $address;
-    $player->name = $address;
-    $addressToPlayer[$address] = $player;
-  }
-
   return $addressToPlayer[$address];
 }
 
@@ -144,17 +147,25 @@ function loadPlayerFromDatabase($address) {
   global $addressToPlayer;
 
   if (!isset($addressToPlayer[$address])) {
-    $result = pg_query_params('SELECT * FROM shielded_expedition.players WHERE address = $1 LIMIT 1', [$address]);
+    $is_public_key = validate_tpknam1($address);
+    $result = null;
+    if ($is_public_key) {
+      $result = pg_query_params('SELECT * FROM shielded_expedition.players WHERE public_key = $1 LIMIT 1', [$address]);  
+    } else {
+      $result = pg_query_params('SELECT * FROM shielded_expedition.players WHERE address = $1 LIMIT 1', [$address]);
+    }
     if ($result)
     {
       $obj = pg_fetch_object($result);
       $player = new Player();
-      $player->address = $address;
+      $player->address = $obj->address;
       $player->name = $obj->name ?? $address;
       $player->publicKey = $obj->public_key ?? '';
       $player->score = $obj->score ?? 0;
       $player->playerType = $obj->player_type ?? $player->playerType;
+      // if $address is a public key, add as both address and public key
       $addressToPlayer[$address] = $player;
+      $addressToPlayer[$player->address] = $player;
     }
   }
 }

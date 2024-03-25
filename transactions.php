@@ -18,7 +18,13 @@ $addressToPlayer = [];
 //loadPlayerData();
 
 //validate all inputs and reset the sht if anyone has tried passing badness
-if ( (!empty($address) and !validate_tnam1($address)) or (!empty($ascdesc) and $ascdesc !== 'asc' and $ascdesc !== 'desc') or (!empty($sort) and $sort !== '5' and $sort !== '2' and $sort !== '3' and $sort !== '4' and $sort !== '6' and $sort !== '7') or ($mode !== 'transactions' and $mode !== 'connected' and $mode !== 'num_transfers' and !empty($mode)) or (!empty($range) and $range !== 'num_incoming' and $range!== 'num_outgoing' and $range !== 'sum_incoming' and $range !== 'sum_outgoing' and $range !== 'wallets_outgoing' and $range !== 'wallets_incoming')  ) {
+$is_address = validate_tnam1($address);
+$is_public_key = validate_tpknam1($address);
+if ($is_public_key) {
+  $player = getPlayerFromAddress($address);
+  $address = $player->address;
+}
+if ((!$is_address and !$is_public_key) or (!empty($ascdesc) and $ascdesc !== 'asc' and $ascdesc !== 'desc') or (!empty($sort) and $sort !== '5' and $sort !== '2' and $sort !== '3' and $sort !== '4' and $sort !== '6' and $sort !== '7') or ($mode !== 'transactions' and $mode !== 'connected' and $mode !== 'num_transfers' and !empty($mode)) or (!empty($range) and $range !== 'num_incoming' and $range!== 'num_outgoing' and $range !== 'sum_incoming' and $range !== 'sum_outgoing' and $range !== 'wallets_outgoing' and $range !== 'wallets_incoming')  ) {
     $run_mode = 'default';
     $address = '';
     $from = '';
@@ -90,7 +96,7 @@ if (!empty($error)) {
 
 
 <form action="<?php echo($filename);?>" method="get">
-	Address (tnam):<input type="text" name="address" size="41" value="<?php echo($address);?>"><br>
+	Address or public key: <input type="text" name="address" size="41" value="<?php echo($address);?>"><br>
 	<button type="submit" name="mode" value="transactions">Check Transactions</button> 
 	<button type="submit" name="mode" value="connected">Check Connected Wallets</button><br><br>
 	Sort by <select name="sort">
@@ -214,8 +220,9 @@ if ($run_mode === 'transactions') {
 
   $player = getPlayerFromAddress($address);
   
+  echo("Name: {$player->name}<br>\n");
   echo("Address: $address<br>\n");
-  if ($player->publicKey) echo("Public Key {$player->publicKey}<br>\n");
+  if ($player->publicKey) echo("Public Key: {$player->publicKey}<br>\n");
   echo("Player type: {$player->playerType}<br>\n");
   echo("Transactions sent: $sent Transactions received: $received<br>\n");
   echo("Total amount sent: $sum_sent naan Total amount received: $sum_received naan<br>\n");
