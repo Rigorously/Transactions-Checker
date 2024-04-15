@@ -1,11 +1,19 @@
 <?php
 			include "includes567.php";
-			
-			$playerType = "Crew";
-			$topPlayers = getTopPlayers($playerType);
-			
+						
 			createEarlyTxTable();
 			truncateEarlyTxTable();
+
+			$playerType = "Crew";
+			$topPlayers = getTopPlayers($playerType);
+
+			foreach ($topPlayers as $tp)
+			{
+				populateEarlyTxTable($tp['public_key']);
+			}
+
+			$playerType = "Pilot";
+			$topPlayers = getTopPlayers($playerType);
 
 			foreach ($topPlayers as $tp)
 			{
