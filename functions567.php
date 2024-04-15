@@ -76,6 +76,11 @@ function hyperlink_proposal($in, $mode_arg) {
   return $returnstring;
 }
 
+function hyperlink_transaction($tx) {
+  $tx = substr($tx, 2);
+  return '<a href="https://explorer.node75.org/namada/tx/' . $tx . '">' . $tx  . '</a>';
+}
+
 class Player {
   public $name;
   public $address;
