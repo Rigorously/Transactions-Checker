@@ -81,69 +81,75 @@
 
 		if ($player)
 		{
-			$earlyTransactions = getEarlyTransactions($player['public_key']);
-			$topPlayers = getTopPlayers($playerType);
-
 			echo "<table><tr><td>Moniker</td><td>" . $player['name'] . "</td></tr>";
 			echo "<tr><td>Address</td><td>" . $player['address'] . "</td></tr>";
 			echo "<tr><td>Public key</td><td><a href='https://extended-nebb.kintsugi.tech/player/" . $player['public_key'] . "'>" . $player['public_key'] . "</a></td></tr>";
 			echo "<tr><td>Score</td><td>" . number_format($player['score']) . " as of March 13th</td></tr>";
 			echo "</table>";
 
-			$matchPool = [];
-			foreach ($topPlayers as $tp)
+			$earlyTransactions = getEarlyTransactions($player['public_key']);
+			if (count($earlyTransactions) == 0)
 			{
-				if ($tp['public_key'] == $player['public_key'])
+				echo "<p>Player has no transactions</p>";
+			}
+			else
+			{
+				$topPlayers = getTopPlayers($playerType);
+			
+				$matchPool = [];
+				foreach ($topPlayers as $tp)
 				{
-					continue;
-				}
-				$matches = 0;
-				$numTransactions = 0;
-				$tpTransactions = getEarlyTransactions($tp['public_key']);
-				$list = "";
-				foreach ($earlyTransactions as $ettxid => $et)
-				{
-					if (!isset($tpTransactions[$ettxid]))
+					if ($tp['public_key'] == $player['public_key'])
 					{
 						continue;
 					}
-					$numTransactions++;
-					$class = '';
-					if ($et['code_type'] == $tpTransactions[$ettxid]['code_type'])
+					$matches = 0;
+					$numTransactions = 0;
+					$tpTransactions = getEarlyTransactions($tp['public_key']);
+					$list = "";
+					foreach ($earlyTransactions as $ettxid => $et)
 					{
-						$matches++;
-						$class = 'match';
+						if (!isset($tpTransactions[$ettxid]))
+						{
+							continue;
+						}
+						$numTransactions++;
+						$class = '';
+						if ($et['code_type'] == $tpTransactions[$ettxid]['code_type'])
+						{
+							$matches++;
+							$class = 'match';
+						}
+						$list .= "<tr class='$class'><td>#$ettxid</td><td>" . $et['code_type'] . "</td><td> " . $tpTransactions[$ettxid]['code_type'] . "</td></tr>\n";
 					}
-					$list .= "<tr class='$class'><td>#$ettxid</td><td>" . $et['code_type'] . "</td><td> " . $tpTransactions[$ettxid]['code_type'] . "</td></tr>\n";
+					if ($numTransactions == 0)
+					{
+						continue;
+					}
+					$matchPercent = round($matches / $numTransactions * 100);
+					if ($matchPercent >= $minMatchPercent)
+					{
+						$header = "<tr class='moniker'><td>" . $matchPercent . "%</td><td>" . $player['name'] . "</td><td><a href='#' onclick='changeIdentifier(\"" . $tp['name'] . "\")'>" . $tp['name'] . "</a></td></tr>\n";
+						$match = [];
+						$match['score'] = $matchPercent;
+						$match['table'] = $header . $list;
+						$matchPool[] = $match;
+					}
 				}
-				if ($numTransactions == 0)
-				{
-					continue;
-				}
-				$matchPercent = round($matches / $numTransactions * 100);
-				if ($matchPercent >= $minMatchPercent)
-				{
-					$header = "<tr class='moniker'><td>" . $matchPercent . "%</td><td>" . $player['name'] . "</td><td><a href='#' onclick='changeIdentifier(\"" . $tp['name'] . "\")'>" . $tp['name'] . "</a></td></tr>\n";
-					$match = [];
-					$match['score'] = $matchPercent;
-					$match['table'] = $header . $list;
-					$matchPool[] = $match;
-				}
-			}
 
-			usort($matchPool, "matchSort");
-			foreach ($matchPool as $m)
-			{
-				echo "<table>";
-				echo $m['table'];
-				echo "</table>";
+				usort($matchPool, "matchSort");
+				foreach ($matchPool as $m)
+				{
+					echo "<table>";
+					echo $m['table'];
+					echo "</table>";
+				}
 			}
 		}
 		else
 		{
 			$playerType = $playerType == 'Crew' ? 'Pilot' : 'Crew';
 			echo "<p>Player not found in database. Try <a href='#' onclick='changePlayerType(\"" . $playerType . "\")'>" . $playerType . "</a> database.</p>";
-			
 		}
 	}
 
