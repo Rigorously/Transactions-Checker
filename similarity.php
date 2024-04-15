@@ -64,7 +64,7 @@
 			echo "<table><tr><td>Moniker</td><td>" . $player['name'] . "</td></tr>";
 			echo "<tr><td>Address</td><td>" . $player['address'] . "</td></tr>";
 			echo "<tr><td>Public key</td><td><a href='https://extended-nebb.kintsugi.tech/player/" . $player['public_key'] . "'>" . $player['public_key'] . "</a></td></tr>";
-			echo "<tr><td>Score</td><td>" . $player['score'] . "</td></tr>";
+			echo "<tr><td>Score</td><td>" . number_format($player['score']) . " as of March 13th</td></tr>";
 			echo "</table>";
 
 			echo "<table>";
