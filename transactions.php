@@ -55,9 +55,24 @@ body {
   padding: 10px;
 }
 table, th, td {
-white-space: nowrap;
+  white-space: nowrap;
+  font-family: 'Courier New', Courier, monospace;
 }
-
+.PilotA:after {
+  content: "🚀";
+}
+.Pilot, .Genesis {
+  font-weight: bold;
+}
+.Team {
+  font-style: italic;
+}
+.Pilot, .Crew, .Unknown, .Team {
+  text-decoration: none;
+}
+.current {
+  color: gray;
+}
 
 </style>
 
@@ -220,10 +235,16 @@ if ($run_mode === 'transactions') {
 
   $player = getPlayerFromAddress($address);
   
-  echo("Name: {$player->name}<br>\n");
+  echo("Name: <span class='{$player->playerType}'>{$player->name}</span><br>\n");
   echo("Address: $address<br>\n");
-  if ($player->publicKey) echo("Public Key: {$player->publicKey}<br>\n");
-  echo("Player type: {$player->playerType}<br>\n");
+  if ($player->publicKey) echo("Public Key: <a href='https://extended-nebb.kintsugi.tech/player/{$player->publicKey}'>{$player->publicKey}</a><br>\n");
+  echo("Player type: <span class='{$player->playerType}'>{$player->playerType}</span>");
+  if ($player->isGenesis) {
+    echo(" [Genesis]");
+  } else if ($player->isValidator) {
+    echo(" [Validator]");
+  }
+  echo("<br>\n");
   echo("Transactions sent: $sent Transactions received: $received<br>\n");
   echo("Total amount sent: $sum_sent naan Total amount received: $sum_received naan<br>\n");
   echo("Number of wallet sent to: $wallets_sent Number of wallets received from: $wallets_received<br>\n");
@@ -257,13 +278,16 @@ if (!empty($table_headers)) {
 
 while ($line = pg_fetch_array($results, null, PGSQL_ASSOC)) {
     echo "\t<tr>\n";
-    foreach ($line as $col_value) {
+    foreach ($line as $col_name => $col_value) {
 	echo("\t\t<td>"); 
-	if ($col_value != $address and validate_tnam1($col_value)) {
+  if ($col_name == 'transaction_id') {
+    echo(hyperlink_transaction($col_value));
+  }
+	elseif ($col_value != $address and validate_tnam1($col_value)) {
 	   echo(hyperlink_address($col_value, 'transactions'));
 	} elseif ($col_value == $address) {
      $player = getPlayerFromAddress($address);
-     echo ("<div style=\"color: grey\">{$player->name}</div>");
+     echo ("<div class='current {$player->playerType}'>{$player->name}</div>");
 	} else {
 	  echo($col_value);
 	}
