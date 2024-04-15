@@ -19,17 +19,32 @@
 	$filename = strip_all(basename($_SERVER['PHP_SELF']));
 	$identifier = strip_all($_GET["identifier"] ?? "");
 	$playerType = strtolower(strip_all($_GET["player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
+	$paramMinMatch = strip_all($_GET["min_match"] ?? 30);
+	$minMatchPercent = $paramMinMatch >= 0 && $paramMinMatch <= 100 ? $paramMinMatch : 30;
+
 	?>
 	<h2>Compare the early transactions of a player with the top 100</h2>
 	<form action="<?php echo ($filename); ?>" method="get">
-		<label for="identifier">Moniker, address or public key:</label><input type="text" name="identifier" id="identifier" size="80"
-			value="<?php echo ($identifier); ?>">
-		<label for="player_type">Player type: </label><select name="player_type" id="player_type">
-			<option value="crew" <?=($playerType == 'Crew') ? 'selected' : '' ?>>Crew Member</option>
-			<option value="pilot" <?=($playerType == 'Pilot') ? 'selected' : '' ?>>Pilot</option>
-		</select>
-		<button type="submit">Show</button>
+		<p><label for="identifier">Moniker, address or public key:</label><input type="text" name="identifier"
+				id="identifier" size="80" value="<?php echo ($identifier); ?>">
+		<p><label for="player_type">Player type: </label><select name="player_type" id="player_type">
+				<option value="crew" <?= ($playerType == 'Crew') ? 'selected' : '' ?>>Crew Member</option>
+				<option value="pilot" <?= ($playerType == 'Pilot') ? 'selected' : '' ?>>Pilot</option>
+			</select>
+		<label>Match at least: </label><input type="range" min="0" max="100" value="<?= $minMatchPercent ?>"
+				class="slider" name="min_match" id="minMatchPercentSlider"> <span id="minMatchPercentDisplay"></span>%
+		<p><button type="submit">Show</button>
 	</form>
+	<script>
+		var slider = document.getElementById("minMatchPercentSlider");
+		var minMatchPercentDisplay = document.getElementById("minMatchPercentDisplay");
+		minMatchPercentDisplay.innerHTML = slider.value;
+
+		// Update the current slider value (each time you drag the slider handle)
+		slider.oninput = function () {
+			minMatchPercentDisplay.innerHTML = this.value;
+		}
+	</script>
 	<?php
 
 	if ($identifier)
@@ -37,7 +52,7 @@
 		// TODO Configurable ranges
 		$maxTransactions = 20;
 		$maxTopPlayers = 100;
-		$minMatchPercent = 30;
+
 
 		$player = getPlayer($identifier, $playerType);
 
@@ -75,7 +90,7 @@
 					$list .= "<tr class='$class'><td>#$ettxid</td><td>" . $et['code_type'] . "</td><td> " . $tpTransactions[$ettxid]['code_type'] . "</td></tr>\n";
 				}
 				$matchPercent = round($matches / $numTransactions * 100);
-				if ($matchPercent > $minMatchPercent)
+				if ($matchPercent >= $minMatchPercent)
 				{
 					echo "<tr class='moniker'><td>" . $matchPercent . "%</td><td>" . $player['name'] . "</td><td>" . $tp['name'] . "</td></tr>\n";
 					echo $list;
