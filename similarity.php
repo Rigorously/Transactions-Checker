@@ -48,14 +48,24 @@
 			minMatchPercentDisplay.innerHTML = this.value;
 		}
 
-		function changeIdentifier(identifier)
+		function changeParameter(parameter, value)
 		{
 			const currentUrl = window.location.href;
 			const url = new URL(currentUrl);
 			const params = url.searchParams;
-			params.set('identifier', identifier);
+			params.set(parameter, value);
 			const updatedUrl = url.href;
 			window.location.href = updatedUrl;
+		}
+
+		function changeIdentifier(identifier)
+		{
+			changeParameter('identifier', identifier);
+		}
+
+		function changePlayerType(playerType)
+		{
+			changeParameter('player_type', playerType);
 		}
 	</script>
 	<?php
@@ -128,6 +138,12 @@
 				echo $m['table'];
 				echo "</table>";
 			}
+		}
+		else
+		{
+			$playerType = $playerType == 'Crew' ? 'Pilot' : 'Crew';
+			echo "<p>Player not found in database. Try <a href='#' onclick='changePlayerType(\"" . $playerType . "\")'>" . $playerType . "</a> database.</p>";
+			
 		}
 	}
 
