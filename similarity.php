@@ -18,22 +18,27 @@
 	include "includes567.php";
 	$filename = strip_all(basename($_SERVER['PHP_SELF']));
 	$identifier = strip_all($_GET["identifier"] ?? "");
+	$playerType = strtolower(strip_all($_GET["player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
 	?>
-	<h2>Compare the early transactions of a Crew Member with the top 100 Crew Members</h2>
+	<h2>Compare the early transactions of a player with the top 100</h2>
 	<form action="<?php echo ($filename); ?>" method="get">
-		Moniker, address or public key: <input type="text" name="identifier" size="41"
+		<label for="identifier">Moniker, address or public key:</label><input type="text" name="identifier" id="identifier" size="80"
 			value="<?php echo ($identifier); ?>">
+		<label for="player_type">Player type: </label><select name="player_type" id="player_type">
+			<option value="crew" <?=($playerType == 'Crew') ? 'selected' : '' ?>>Crew Member</option>
+			<option value="pilot" <?=($playerType == 'Pilot') ? 'selected' : '' ?>>Pilot</option>
+		</select>
 		<button type="submit">Show</button>
 	</form>
 	<?php
 
 	if ($identifier)
 	{
+		// TODO Configurable ranges
 		$maxTransactions = 20;
 		$maxTopPlayers = 100;
 		$minMatchPercent = 30;
 
-		$playerType = "Crew";
 		$player = getPlayer($identifier, $playerType);
 
 		if ($player)
@@ -43,7 +48,7 @@
 
 			echo "<table><tr><td>Moniker</td><td>" . $player['name'] . "</td></tr>";
 			echo "<tr><td>Address</td><td>" . $player['address'] . "</td></tr>";
-			echo "<tr><td>Public key</td><td>" . $player['public_key'] . "</td></tr>";
+			echo "<tr><td>Public key</td><td><a href='https://extended-nebb.kintsugi.tech/player/" . $player['public_key'] . "'>" . $player['public_key'] . "</a></td></tr>";
 			echo "<tr><td>Score</td><td>" . $player['score'] . "</td></tr>";
 			echo "</table>";
 
@@ -85,7 +90,7 @@
 		global $dbconn;
 		$result = pg_query_params($dbconn, "SELECT address, name, public_key, score 
 			FROM shielded_expedition.players 
-			WHERE (public_key = $1 OR name = $1 OR address = $1) AND player_type = $2
+			WHERE (LOWER(public_key) = LOWER($1) OR LOWER(name) = LOWER($1) OR LOWER(address) = LOWER($1)) AND player_type = $2
 			ORDER BY score DESC LIMIT 1;",
 			[$identifier, $playerType]
 		);
