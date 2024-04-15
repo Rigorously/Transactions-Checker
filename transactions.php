@@ -140,7 +140,7 @@ if (!empty($error)) {
 //assume $dbconn opened by includes
 
 if ($run_mode == 'transactions') {	
-  $query = "SELECT TO_CHAR(header_time::timestamp, 'YYYY-MM-DD HH24:MI:SS') AS time, REPLACE(source, 'tnam1pcqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzmefah', 'shielded') AS source, REPLACE(target, 'tnam1pcqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzmefah', 'shielded') AS target, amount, header_height AS block_height, tx_id AS transaction_id FROM shielded_expedition.tx_transfer LEFT JOIN shielded_expedition.transactions ON tx_transfer.tx_id = shielded_expedition.transactions.hash LEFT JOIN shielded_expedition.blocks ON transactions.block_id = blocks.block_id
+  $query = "SELECT TO_CHAR(header_time::timestamp, 'YYYY-MM-DD HH24:MI:SS') AS time, REPLACE(source, 'tnam1pcqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzmefah', 'shielded') AS source, REPLACE(target, 'tnam1pcqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzmefah', 'shielded') AS target, amount, header_height AS block_height, txid AS transaction_id FROM shielded_expedition.tx_transfer LEFT JOIN shielded_expedition.transactions ON tx_transfer.txid = shielded_expedition.transactions.hash LEFT JOIN shielded_expedition.blocks ON transactions.block_id = blocks.block_id
  WHERE token = 'tnam1qxvg64psvhwumv3mwrrjfcz0h3t3274hwggyzcee' AND (source = '$address' OR target = '$address') ORDER BY 5 ASC";
 //  $table_headers = array('date_time1', 'source', 'target', 'amount', 'block_height', 'transaction id'); 
 } elseif ($run_mode == 'connected') {
