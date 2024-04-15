@@ -67,7 +67,7 @@
 			echo "<tr><td>Score</td><td>" . number_format($player['score']) . " as of March 13th</td></tr>";
 			echo "</table>";
 
-			echo "<table>";
+			$matchPool = [];
 			foreach ($topPlayers as $tp)
 			{
 				if ($tp['public_key'] == $player['public_key'])
@@ -92,12 +92,27 @@
 				$matchPercent = round($matches / $numTransactions * 100);
 				if ($matchPercent >= $minMatchPercent)
 				{
-					echo "<tr class='moniker'><td>" . $matchPercent . "%</td><td>" . $player['name'] . "</td><td>" . $tp['name'] . "</td></tr>\n";
-					echo $list;
+					$header = "<tr class='moniker'><td>" . $matchPercent . "%</td><td>" . $player['name'] . "</td><td>" . $tp['name'] . "</td></tr>\n";
+					$match = [];
+					$match['score'] = $matchPercent;
+					$match['table'] = $header . $list;
+					$matchPool[] = $match;
 				}
+			}
+
+			echo "<table>";
+			usort($matchPool, "matchSort");
+			foreach ($matchPool as $m)
+			{
+				echo $m['table'];
 			}
 			echo "</table>";
 		}
+	}
+
+	function matchSort($a,$b)
+	{
+		return $a['score']<$b['score'];
 	}
 
 	function getPlayer($identifier, $playerType)
