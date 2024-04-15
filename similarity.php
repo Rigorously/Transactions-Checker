@@ -10,6 +10,9 @@
 		.moniker {
 			font-size: x-large;
 		}
+		td:nth-child(n+2) {
+			width: 45%;
+		}
 	</style>
 </head>
 
@@ -31,8 +34,9 @@
 				<option value="crew" <?= ($playerType == 'Crew') ? 'selected' : '' ?>>Crew Member</option>
 				<option value="pilot" <?= ($playerType == 'Pilot') ? 'selected' : '' ?>>Pilot</option>
 			</select>
-		<label>Match at least: </label><input type="range" min="0" max="100" value="<?= $minMatchPercent ?>"
-				class="slider" name="min_match" id="minMatchPercentSlider"> <span id="minMatchPercentDisplay"></span>%
+			<label for="minMatchPercentSlider">Match at least: </label><input type="range" min="0" max="100"
+				value="<?= $minMatchPercent ?>" class="slider" name="min_match" id="minMatchPercentSlider"> <span
+				id="minMatchPercentDisplay"></span>%
 		<p><button type="submit">Show</button>
 	</form>
 	<script>
@@ -100,19 +104,19 @@
 				}
 			}
 
-			echo "<table>";
 			usort($matchPool, "matchSort");
 			foreach ($matchPool as $m)
 			{
+				echo "<table>";
 				echo $m['table'];
+				echo "</table>";
 			}
-			echo "</table>";
 		}
 	}
 
-	function matchSort($a,$b)
+	function matchSort($a, $b)
 	{
-		return $a['score']<$b['score'];
+		return $a['score'] < $b['score'];
 	}
 
 	function getPlayer($identifier, $playerType)
