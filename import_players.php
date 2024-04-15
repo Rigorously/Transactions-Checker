@@ -33,7 +33,7 @@ else
 	);
 }
 
-$filename = 'players.csv';
+$filename = 'players-100.csv';
 $file = fopen($filename, 'r');
 
 if ($file === false)
