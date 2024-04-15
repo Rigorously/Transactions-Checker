@@ -57,13 +57,18 @@ if ((!$is_address and !$is_public_key)) {
 <head>
 <link rel="stylesheet" href="simple.min.css">
 <style>
+@font-face {
+  font-family: "Sono";
+  src: url("Sono-Regular.woff2") format('woff2');
+}
 body { 
   display: block;
   padding: 10px;
 }
-table, th, td {
+td {
+  font-family: 'Sono', 'Courier New', Courier, monospace;
   white-space: nowrap;
-  font-family: 'Courier New', Courier, monospace;
+  text-align: right;
 }
 .PilotA:after {
   content: "🚀";
@@ -286,11 +291,10 @@ if (!empty($table_headers)) {
 while ($line = pg_fetch_array($results, null, PGSQL_ASSOC)) {
     echo "\t<tr>\n";
     foreach ($line as $col_name => $col_value) {
-	echo("\t\t<td>"); 
+	echo("\t\t<td>");
   if ($col_name == 'transaction_id') {
     echo(hyperlink_transaction($col_value));
-  }
-	elseif ($col_value != $address and validate_tnam1($col_value)) {
+  }	elseif ($col_value != $address and validate_tnam1($col_value)) {
 	   echo(hyperlink_address($col_value, 'transactions'));
 	} elseif ($col_value == $address) {
      $player = getPlayerFromAddress($address);
