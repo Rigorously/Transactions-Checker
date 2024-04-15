@@ -48,7 +48,7 @@ if ((!$is_address and !$is_public_key) or (!empty($ascdesc) and $ascdesc !== 'as
 <html>
 
 <head>
-<link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+<link rel="stylesheet" href="simple.min.css">
 <style>
 body { 
   display: block;
