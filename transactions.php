@@ -27,8 +27,7 @@ if ($is_public_key) {
 
 if ((!$is_address and !$is_public_key)) {
   //TODO Show a default view
-} else if ((!$is_address and !$is_public_key) 
-  or (!empty($ascdesc) and $ascdesc !== 'asc' and $ascdesc !== 'desc') 
+} else if ((!empty($ascdesc) and $ascdesc !== 'asc' and $ascdesc !== 'desc') 
   or (!empty($sort) and $sort !== '5' and $sort !== '2' and $sort !== '3' and $sort !== '4' and $sort !== '6' and $sort !== '7') 
   or ($mode !== 'transactions' and $mode !== 'connected' and $mode !== 'num_transfers' and !empty($mode)) 
   or (!empty($range) and $range !== 'num_incoming' and $range!== 'num_outgoing' and $range !== 'sum_incoming' and $range !== 'sum_outgoing' and $range !== 'wallets_outgoing' and $range !== 'wallets_incoming')  ) {
