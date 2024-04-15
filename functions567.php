@@ -62,7 +62,7 @@ function hyperlink_address($in, $mode_arg) {
   $servername = strip_all($_SERVER['HTTP_HOST']);
   $player = getPlayerFromAddress($in);
   $newlink = '//' . $servername . $uri . '?address=' . $in . '&mode=' . $mode_arg;
-  $returnstring = '<a href="' . $newlink . '" style="text-decoration: none">' . $player->name . '</a>';
+  $returnstring = '<a href="' . $newlink . '" class="' . $player->playerType . '">' . $player->name . '</a>';
   return $returnstring;
 }
 
@@ -82,6 +82,8 @@ class Player {
   public $publicKey;
   public $score;
   public $playerType = "Unknown";
+  public $isValidator = false;
+  public $isGenesis = false;
 }
 
 function loadPlayerData() {
@@ -163,6 +165,28 @@ function loadPlayerFromDatabase($address) {
       $player->publicKey = $obj->public_key ?? '';
       $player->score = $obj->score ?? 0;
       $player->playerType = $obj->player_type ?? $player->playerType;
+      
+      $result = pg_query_params('SELECT * FROM shielded_expedition.validators WHERE address = $1 LIMIT 1', [$address]);
+      if ($result)
+      {
+        $obj = pg_fetch_object($result);
+        if ($obj)
+        {
+          $player->isValidator = true;
+          $label = "[Validator]";
+          $player->isGenesis = $obj->genesis && $obj->genesis != 'f';
+          if ($player->isGenesis) {
+            $label = "[Genesis]";
+            if ($player->playerType == 'Unknown')
+            {
+              $player->playerType = 'Genesis';
+            }
+          }
+          $player->name = $obj->name ? $obj->name : $player->name;
+          $player->name .= " " . $label;
+        }
+      }
+
       // if $address is a public key, add as both address and public key
       $addressToPlayer[$address] = $player;
       $addressToPlayer[$player->address] = $player;
