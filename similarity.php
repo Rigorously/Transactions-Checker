@@ -93,6 +93,10 @@
 				$list = "";
 				foreach ($earlyTransactions as $ettxid => $et)
 				{
+					if (!isset($tpTransactions[$ettxid]))
+					{
+						continue;
+					}
 					$numTransactions++;
 					$class = '';
 					if ($et['code_type'] == $tpTransactions[$ettxid]['code_type'])
@@ -101,6 +105,10 @@
 						$class = 'match';
 					}
 					$list .= "<tr class='$class'><td>#$ettxid</td><td>" . $et['code_type'] . "</td><td> " . $tpTransactions[$ettxid]['code_type'] . "</td></tr>\n";
+				}
+				if ($numTransactions == 0)
+				{
+					continue;
 				}
 				$matchPercent = round($matches / $numTransactions * 100);
 				if ($matchPercent >= $minMatchPercent)
