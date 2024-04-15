@@ -48,6 +48,15 @@
 		slider.oninput = function () {
 			minMatchPercentDisplay.innerHTML = this.value;
 		}
+		function changeIdentifier(identifier)
+		{
+			const currentUrl = window.location.href;
+			const url = new URL(currentUrl);
+			const params = url.searchParams;
+			params.set('identifier', identifier);
+			const updatedUrl = url.href;
+			window.location.href = updatedUrl;
+		}
 	</script>
 	<?php
 
@@ -96,7 +105,7 @@
 				$matchPercent = round($matches / $numTransactions * 100);
 				if ($matchPercent >= $minMatchPercent)
 				{
-					$header = "<tr class='moniker'><td>" . $matchPercent . "%</td><td>" . $player['name'] . "</td><td>" . $tp['name'] . "</td></tr>\n";
+					$header = "<tr class='moniker'><td>" . $matchPercent . "%</td><td>" . $player['name'] . "</td><td><a href='#' onclick='changeIdentifier(\"" . $tp['name'] . "\")'>" . $tp['name'] . "</a></td></tr>\n";
 					$match = [];
 					$match['score'] = $matchPercent;
 					$match['table'] = $header . $list;
