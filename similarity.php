@@ -44,10 +44,10 @@
 		var minMatchPercentDisplay = document.getElementById("minMatchPercentDisplay");
 		minMatchPercentDisplay.innerHTML = slider.value;
 
-		// Update the current slider value (each time you drag the slider handle)
 		slider.oninput = function () {
 			minMatchPercentDisplay.innerHTML = this.value;
 		}
+
 		function changeIdentifier(identifier)
 		{
 			const currentUrl = window.location.href;
@@ -170,8 +170,20 @@
 			WHERE memo = $1
 			ORDER BY header_height ASC LIMIT $2;",
 			[$publicKey, $maxTransactions]
-		);
+		);		
 		$obj = pg_fetch_all($result, PGSQL_ASSOC);
+		if (count($obj) == 0)
+		{
+			$result = pg_query_params($dbconn, "SELECT code_type 
+				FROM shielded_expedition.transactions 
+				LEFT JOIN shielded_expedition.blocks 
+				ON transactions.block_id = blocks.block_id 
+				WHERE code_type <> 'none' AND memo = $1
+				ORDER BY header_height ASC LIMIT $2;",
+				[$publicKey, $maxTransactions]
+			);
+			$obj = pg_fetch_all($result, PGSQL_ASSOC);
+		}
 		return $obj;
 	}
 
