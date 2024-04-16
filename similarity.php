@@ -44,7 +44,7 @@
 		'tx_reveal_pk' => 'Reveal PK',
 		'tx_transfer' => 'Transfer',
 		'tx_transfert' => 'Transfer',
-		'tx_unbond' => 'Unbonx',
+		'tx_unbond' => 'Unbond',
 		'tx_unjail_validator' => 'Unjail Validator',
 		'tx_update_account' => 'Update Account',
 		'tx_update_steward_commission' => 'Update Steward Commission',
