@@ -222,7 +222,7 @@
 					{
 						$header = "<tr class='moniker'><td>DL" . $levenshtein . "<br>" . $matchPercent . "%</td><td>"
 							. "<span class='txchars'>$thisPlayerTxChars</span>" . $player['name'] . "</td><td>"
-							. "<span class='txchars'>$thatPlayerTxChars</span>" . "<a href='#' onclick='changeIdentifier(\"" . $tp['name'] . "\")'>" . $tp['name'] . "</a>" . "</td></tr>\n";
+							. "<span class='txchars'>$thatPlayerTxChars</span>" . "<a href='" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a>" . "</td></tr>\n";
 						$match = [];
 						$match['matchPercent'] = $matchPercent;
 						$match['Levenshtein'] = $levenshtein;
@@ -243,7 +243,7 @@
 		else
 		{
 			$playerType = $playerType == 'Crew' ? 'Pilot' : 'Crew';
-			echo "<p>Player not found in database. Try <a href='#' onclick='changePlayerType(\"" . $playerType . "\")'>" . $playerType . "</a> database.</p>";
+			echo "<p>Player not found in database. Try <a href='" . modifyQueryString('player_type', $playerType) . "'>" . $playerType . "</a> database.</p>";
 		}
 	}
 
@@ -334,6 +334,16 @@
 		{
 			return $txChars[$tx['code_type']];
 		}
+	}
+
+	function modifyQueryString($parameter, $value)
+	{
+		$currentQueryString = $_SERVER['QUERY_STRING'];
+		$sanitizedQueryString = filter_var($currentQueryString, FILTER_SANITIZE_STRING);
+		parse_str($sanitizedQueryString, $queryParams);
+		$queryParams[$parameter] = $value;
+		$updatedQueryString = http_build_query($queryParams);
+		return '?' . $updatedQueryString;
 	}
 
 	?>
