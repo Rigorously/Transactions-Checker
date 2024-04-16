@@ -14,17 +14,31 @@
 		td:nth-child(n+2) {
 			width: 45%;
 		}
+
+		.txchars {
+			font-size: small;
+			display: block;
+		}
 	</style>
 </head>
 
 <body>
 	<?php
+	include "DamerauLevenshtein.php";
+	use Oefenweb\DamerauLevenshtein\DamerauLevenshtein;
+
 	include "includes567.php";
 	$filename = strip_all(basename($_SERVER['PHP_SELF']));
 	$identifier = strip_all($_GET["identifier"] ?? "");
 	$playerType = strtolower(strip_all($_GET["player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
-	$paramMinMatch = strip_all($_GET["min_match"] ?? 30);
-	$minMatchPercent = $paramMinMatch >= 0 && $paramMinMatch <= 100 ? $paramMinMatch : 30;
+
+	$defaultMinMatch = 30;
+	$paramMinMatch = strip_all($_GET["min_match"] ?? $defaultMinMatch);
+	$minMatchPercent = $paramMinMatch >= 0 && $paramMinMatch <= 100 ? $paramMinMatch : $defaultMinMatch;
+
+	$defaultMaxLevenshtein = 20;
+	$paramMaxLevenshtein = strip_all($_GET["max_levenshtein"] ?? $defaultMaxLevenshtein);
+	$maxLevenshtein = $paramMaxLevenshtein >= 0 && $paramMaxLevenshtein <= 100 ? $paramMaxLevenshtein : $defaultMaxLevenshtein;
 
 	$txStrings = array(
 		'tx_become_validator' => 'Become Validator',
@@ -53,6 +67,33 @@
 		'tx_withdraw' => 'Withdraw'
 	);
 
+	$txChars = array(
+		'tx_become_validator' => 'a',
+		'tx_bond' => 'b',
+		'tx_bridge_pool' => 'c',
+		'tx_change_consensus_key' => 'd',
+		'tx_change_validator_commission' => 'e',
+		'tx_change_validator_comission' => 'e',
+		'tx_change_validator_metadata' => 'f',
+		'tx_claim_rewards' => 'g',
+		'tx_deactivate_validator' => 'h',
+		'tx_ibc' => 'i',
+		'tx_init_account' => 'j',
+		'tx_init_proposal' => 'k',
+		'tx_reactivate_validator' => 'l',
+		'tx_redelegate' => 'm',
+		'tx_resign_steward' => 'n',
+		'tx_reveal_pk' => 'o',
+		'tx_transfer' => 'p',
+		'tx_transfert' => 'p',
+		'tx_unbond' => 'q',
+		'tx_unjail_validator' => 'r',
+		'tx_update_account' => 's',
+		'tx_update_steward_commission' => 't',
+		'tx_vote_proposal' => 'u',
+		'tx_withdraw' => 'v'
+	);
+
 	?>
 	<h2>Compare the early transactions of a player with the top 100</h2>
 	<form action="<?php echo ($filename); ?>" method="get">
@@ -62,17 +103,26 @@
 				<option value="crew" <?= ($playerType == 'Crew') ? 'selected' : '' ?>>Crew Member</option>
 				<option value="pilot" <?= ($playerType == 'Pilot') ? 'selected' : '' ?>>Pilot</option>
 			</select>
-			<label for="minMatchPercentSlider">Match at least: </label><input type="range" min="0" max="100"
+			<label for="maxLevenshteinSlider">Highest Damerau-Levenshtein distance: </label><input type="range" min="0"
+				max="60" value="<?= $maxLevenshtein ?>" class="slider" name="max_levenshtein" id="maxLevenshteinSlider">
+			<span id="maxLevenshteinDisplay"></span>
+			<label for="minMatchPercentSlider">Exactly matching transactions at least: </label><input type="range" min="0" max="100"
 				value="<?= $minMatchPercent ?>" class="slider" name="min_match" id="minMatchPercentSlider"> <span
 				id="minMatchPercentDisplay"></span>%
 		<p><button type="submit">Show</button>
 	</form>
 	<script>
+		var maxLevenshteinSlider = document.getElementById("maxLevenshteinSlider");
+		var maxLevenshteinDisplay = document.getElementById("maxLevenshteinDisplay");
+		maxLevenshteinDisplay.innerHTML = maxLevenshteinSlider.value;
+		maxLevenshteinSlider.oninput = function () {
+			maxLevenshteinDisplay.innerHTML = this.value;
+		}
+
 		var slider = document.getElementById("minMatchPercentSlider");
 		var minMatchPercentDisplay = document.getElementById("minMatchPercentDisplay");
-		minMatchPercentDisplay.innerHTML = slider.value;
-
-		slider.oninput = function () {
+		minMatchPercentDisplay.innerHTML = minMatchPercentSlider.value;
+		minMatchPercentSlider.oninput = function () {
 			minMatchPercentDisplay.innerHTML = this.value;
 		}
 
@@ -114,6 +164,14 @@
 			echo "</table>\n";
 
 			$earlyTransactions = getEarlyTransactions($player['public_key']);
+			$thisPlayerCodeTypes = [];
+			$thisPlayerTxChars = '';
+			foreach ($earlyTransactions as $ettxid => $et)
+			{
+				$thisPlayerCodeTypes[$ettxid] = getTxDescription($et);
+				$thisPlayerTxChars .= getTxChar($et);
+			}
+
 			if (count($earlyTransactions) == 0)
 			{
 				echo "<p>Player has no transactions</p>";
@@ -133,6 +191,7 @@
 					$numTransactions = 0;
 					$tpTransactions = getEarlyTransactions($tp['public_key']);
 					$list = "";
+					$thatPlayerTxChars = '';
 					foreach ($earlyTransactions as $ettxid => $et)
 					{
 						if (!isset($tpTransactions[$ettxid]))
@@ -141,25 +200,31 @@
 						}
 						$numTransactions++;
 						$class = '';
-						$thisPlayerCodeType = getTxDescription($et);
 						$thatPlayerCodeType = getTxDescription($tpTransactions[$ettxid]);
-						if ($thisPlayerCodeType == $thatPlayerCodeType)
+						$thatPlayerTxChars .= getTxChar($tpTransactions[$ettxid]);
+						if ($thisPlayerCodeTypes[$ettxid] == $thatPlayerCodeType)
 						{
 							$matches++;
-							$class = 'match';
+							$class = "class='match'";
 						}
-						$list .= "<tr class='$class'><td>#$ettxid</td><td>" . $thisPlayerCodeType . "</td><td> " . $thatPlayerCodeType . "</td></tr>\n";
+						$list .= "<tr $class><td>#$ettxid</td><td>" . $thisPlayerCodeTypes[$ettxid] . "</td><td> " . $thatPlayerCodeType . "</td></tr>\n";
 					}
 					if ($numTransactions < $minTransactions)
 					{
 						continue;
 					}
 					$matchPercent = round($matches / $numTransactions * 100);
-					if ($matchPercent >= $minMatchPercent)
+					//$levenshtein = levenshtein($thisPlayerTxChars, $thatPlayerTxChars, 1, 2, 1);
+					$damerauLevenshtein = new DamerauLevenshtein($thisPlayerTxChars, $thatPlayerTxChars, 2, 2, 1, 1);
+					$levenshtein = $damerauLevenshtein->getSimilarity();
+					if ($levenshtein <= $maxLevenshtein && $matchPercent >= $minMatchPercent)
 					{
-						$header = "<tr class='moniker'><td>" . $matchPercent . "%</td><td>" . $player['name'] . "</td><td><a href='#' onclick='changeIdentifier(\"" . $tp['name'] . "\")'>" . $tp['name'] . "</a></td></tr>\n";
+						$header = "<tr class='moniker'><td>DL" . $levenshtein . "<br>" . $matchPercent . "%</td><td>"
+							. "<span class='txchars'>$thisPlayerTxChars</span>" . $player['name'] . "</td><td>"
+							. "<span class='txchars'>$thatPlayerTxChars</span>" . "<a href='#' onclick='changeIdentifier(\"" . $tp['name'] . "\")'>" . $tp['name'] . "</a>" . "</td></tr>\n";
 						$match = [];
-						$match['score'] = $matchPercent;
+						$match['matchPercent'] = $matchPercent;
+						$match['Levenshtein'] = $levenshtein;
 						$match['table'] = $header . $list;
 						$matchPool[] = $match;
 					}
@@ -183,7 +248,8 @@
 
 	function matchSort($a, $b)
 	{
-		return $a['score'] < $b['score'];
+		return $a['Levenshtein'] > $b['Levenshtein'];
+		//return $a['matchPercent'] < $b['matchPercent'];
 	}
 
 	function getPlayer($identifier, $playerType)
@@ -237,8 +303,6 @@
 		return $obj;
 	}
 
-
-
 	function getTxDescription($tx)
 	{
 		global $txStrings;
@@ -249,6 +313,26 @@
 		}
 		$description .= $txStrings[$tx['code_type']] ?? $tx['code_type'];
 		return $description;
+	}
+
+	function getTxChar($tx)
+	{
+		global $txChars;
+		if (isset($tx['shielded']))
+		{
+			if ($tx['code_type'] == 'tx_transfer' || $tx['code_type'] == 'tx_transfert')
+			{
+				return 'w';
+			}
+			elseif ($tx['code_type'] == 'tx_ibc')
+			{
+				return 'x';
+			}
+		}
+		else
+		{
+			return $txChars[$tx['code_type']];
+		}
 	}
 
 	?>
