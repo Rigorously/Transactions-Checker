@@ -33,7 +33,12 @@ else
 	);
 }
 
-$filename = 'players-100.csv';
+$filename = 'crew-200-240416.csv';
+
+// TODO
+//$filename = 'pilots-100-240313.csv';
+//$filename = 'team.csv';
+
 $file = fopen($filename, 'r');
 
 if ($file === false)
@@ -53,6 +58,5 @@ while (($row = fgetcsv($file)) !== false)
 	{
 		print_r($row);
 		die("User must have sent wrong inputs\n");
-
 	}
 }
