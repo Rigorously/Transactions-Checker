@@ -20,11 +20,16 @@
 			display: block;
 		}
 
+		.score {
+			font-size: small;
+		}
+
 		.matchPercentage {
 			display: none;
 			font-size: small;
 		}
-		.levenshtein:hover + .matchPercentage {
+
+		.levenshtein:hover+.matchPercentage {
 			display: block;
 		}
 	</style>
@@ -126,14 +131,17 @@
 			<label for="maxLevenshteinSlider">Highest Damerau-Levenshtein distance: </label><input type="range" min="0"
 				max="60" value="<?= $maxLevenshtein ?>" class="slider" name="max_levenshtein" id="maxLevenshteinSlider">
 			<span id="maxLevenshteinDisplay"></span>
-		<p>Damerau-Levenshtein edit distance cost: <br>Insertion: <?= $insCost ?> Deletion: <?= $delCost ?> Substitution:
-			<?= $subCost ?> Transposition: <?= $transCost ?></p>
+		<p>Damerau-Levenshtein edit distance cost: <br>Insertion: <?= $insCost ?> Deletion: <?= $delCost ?>
+			Substitution:
+			<?= $subCost ?> Transposition: <?= $transCost ?>
+		</p>
 		<label for="minMatchPercentSlider">Exactly matching transactions at least: </label><input type="range" min="0"
 			max="100" value="<?= $minMatchPercent ?>" class="slider" name="min_match" id="minMatchPercentSlider"> <span
 			id="minMatchPercentDisplay"></span>%
 		<p><button type="submit">Show</button></p>
 		<p>The matching algorithm Damerau–Levenshtein takes into account insertions, deletions, subtitutions and
-			transpositions, each having an edit distance cost (denoted as DL from here on). The lower the DL, the more
+			transpositions, each having an edit distance cost (denoted as DL from here on). The more differences between
+			transactions, the higher the DL. The lower the DL, the more
 			similar both transaction sequences are. Transactions that match exactly are in boldface.</p>
 	</form>
 	<script>
@@ -163,7 +171,7 @@
 			echo "<tr><td>Address</td><td>" . $player['address'] . "</td></tr>\n";
 			echo "<tr><td>Public key</td><td><a href='https://extended-nebb.kintsugi.tech/player/" . $player['public_key'] . "'>" . $player['public_key'] . "</a></td></tr>\n";
 			$scoreboardTime = $playerType == 'Crew' ? "April 16th" : "March 13th";
-			echo "<tr><td>Score</td><td>" . number_format($player['score']) . " as of $scoreboardTime</td></tr>\n";
+			echo "<tr><td>ROIDs</td><td>" . number_format($player['score']) . " as of $scoreboardTime</td></tr>\n";
 			echo "</table>\n";
 
 			$earlyTransactions = getEarlyTransactions($player['public_key']);
@@ -223,8 +231,10 @@
 					if ($levenshtein <= $maxLevenshtein && $matchPercent >= $minMatchPercent)
 					{
 						$header = "<tr class='moniker'><td><div class='levenshtein'>DL" . $levenshtein . "</div><div class='matchPercentage'>EM " . $matchPercent . "%</div></td><td>"
-							. "<span class='txchars'>$thisPlayerTxChars</span>" . $player['name'] . "</td><td>"
-							. "<span class='txchars'>$thatPlayerTxChars</span>" . "<a href='" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a>" . "</td></tr>\n";
+							. "<div class='txchars'>$thisPlayerTxChars</div><div class='moniker'>" . $player['name'] . "</div>"
+							. "<div class='score'>ROIDs:" . number_format($player['score']) . "</div></td><td>"
+							. "<div class='txchars'>$thatPlayerTxChars</div><div class='moniker'>" . "<a href='" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a></div>"
+							. "<div class='score'>ROIDs: " . number_format($tp['score']) . "</div></td></tr>\n";
 						$match = [];
 						$match['matchPercent'] = $matchPercent;
 						$match['Levenshtein'] = $levenshtein;
