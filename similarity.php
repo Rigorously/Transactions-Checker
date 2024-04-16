@@ -19,6 +19,14 @@
 			font-size: small;
 			display: block;
 		}
+
+		.matchPercentage {
+			display: none;
+			font-size: small;
+		}
+		.levenshtein:hover + .matchPercentage {
+			display: block;
+		}
 	</style>
 </head>
 
@@ -107,7 +115,7 @@
 	);
 
 	?>
-	<h2>Compare the early transactions of a player with the top <?=$maxTopPlayers ?></h2>
+	<h2>Compare the early transactions of a player with the top <?= $maxTopPlayers ?></h2>
 	<form action="<?php echo ($filename); ?>" method="get">
 		<p><label for="identifier">Moniker, address or public key:</label><input type="text" name="identifier"
 				id="identifier" size="80" value="<?php echo ($identifier); ?>">
@@ -117,12 +125,16 @@
 			</select>
 			<label for="maxLevenshteinSlider">Highest Damerau-Levenshtein distance: </label><input type="range" min="0"
 				max="60" value="<?= $maxLevenshtein ?>" class="slider" name="max_levenshtein" id="maxLevenshteinSlider">
-			<span id="maxLevenshteinDisplay"></span> 
-			<p>Damerau-Levenshtein edit distance cost: <br>Insertion: <?=$insCost?> Deletion: <?=$delCost?> Substitution: <?=$subCost?> Transposition: <?=$transCost?></p>
-			<label for="minMatchPercentSlider">Exactly matching transactions at least: </label><input type="range" min="0" max="100"
-				value="<?= $minMatchPercent ?>" class="slider" name="min_match" id="minMatchPercentSlider"> <span
-				id="minMatchPercentDisplay"></span>%
-		<p><button type="submit">Show</button>
+			<span id="maxLevenshteinDisplay"></span>
+		<p>Damerau-Levenshtein edit distance cost: <br>Insertion: <?= $insCost ?> Deletion: <?= $delCost ?> Substitution:
+			<?= $subCost ?> Transposition: <?= $transCost ?></p>
+		<label for="minMatchPercentSlider">Exactly matching transactions at least: </label><input type="range" min="0"
+			max="100" value="<?= $minMatchPercent ?>" class="slider" name="min_match" id="minMatchPercentSlider"> <span
+			id="minMatchPercentDisplay"></span>%
+		<p><button type="submit">Show</button></p>
+		<p>The matching algorithm Damerau–Levenshtein takes into account insertions, deletions, subtitutions and
+			transpositions, each having an edit distance cost (denoted as DL from here on). The lower the DL, the more
+			similar both transaction sequences are. Transactions that match exactly are in boldface.</p>
 	</form>
 	<script>
 		var maxLevenshteinSlider = document.getElementById("maxLevenshteinSlider");
@@ -137,23 +149,6 @@
 		minMatchPercentDisplay.innerHTML = minMatchPercentSlider.value;
 		minMatchPercentSlider.oninput = function () {
 			minMatchPercentDisplay.innerHTML = this.value;
-		}
-
-		function changeParameter(parameter, value) {
-			const currentUrl = window.location.href;
-			const url = new URL(currentUrl);
-			const params = url.searchParams;
-			params.set(parameter, value);
-			const updatedUrl = url.href;
-			window.location.href = updatedUrl;
-		}
-
-		function changeIdentifier(identifier) {
-			changeParameter('identifier', identifier);
-		}
-
-		function changePlayerType(playerType) {
-			changeParameter('player_type', playerType);
 		}
 	</script>
 	<?php
@@ -227,7 +222,7 @@
 					$levenshtein = $damerauLevenshtein->getSimilarity();
 					if ($levenshtein <= $maxLevenshtein && $matchPercent >= $minMatchPercent)
 					{
-						$header = "<tr class='moniker'><td>DL" . $levenshtein . "<br>" . $matchPercent . "%</td><td>"
+						$header = "<tr class='moniker'><td><div class='levenshtein'>DL" . $levenshtein . "</div><div class='matchPercentage'>EM " . $matchPercent . "%</div></td><td>"
 							. "<span class='txchars'>$thisPlayerTxChars</span>" . $player['name'] . "</td><td>"
 							. "<span class='txchars'>$thatPlayerTxChars</span>" . "<a href='" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a>" . "</td></tr>\n";
 						$match = [];
