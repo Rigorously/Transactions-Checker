@@ -1,8 +1,9 @@
 <?php
 			include "includes567.php";
-						
+			
+			dropEarlyTxTable();
 			createEarlyTxTable();
-			truncateEarlyTxTable();
+			//truncateEarlyTxTable();
 
 			$playerType = "Crew";
 			$topPlayers = getTopPlayers($playerType);
@@ -36,8 +37,8 @@
 			function populateEarlyTxTable($publicKey)
 			{
 				global $dbconn;
-				$result = pg_query_params($dbconn, "INSERT INTO shielded_expedition.early_tx (memo, header_height, code_type, hash)
-					SELECT memo, header_height, code_type, hash
+				$result = pg_query_params($dbconn, "INSERT INTO shielded_expedition.early_tx (memo, header_height, code_type, hash, data)
+					SELECT memo, header_height, code_type, hash, data
 					FROM shielded_expedition.transactions 
 					LEFT JOIN shielded_expedition.blocks 
 					ON transactions.block_id = blocks.block_id 
@@ -58,7 +59,8 @@
 						memo bytea NOT NULL, 
 						header_height integer NOT NULL, 
 						code_type text NOT NULL, 
-						hash bytea NOT NULL
+						hash bytea NOT NULL,
+						data json
 					)
 				");
 			}
@@ -68,6 +70,13 @@
 				echo "\nTruncating early_tx table";
 				global $dbconn;
 				$result = pg_query($dbconn, "TRUNCATE shielded_expedition.early_tx;");
+			}
+
+			function dropEarlyTxTable()
+			{
+				echo "\nDropping early_tx table";
+				global $dbconn;
+				$result = pg_query($dbconn, "DROP TABLE shielded_expedition.early_tx;");
 			}
 
 			function createIndices()
