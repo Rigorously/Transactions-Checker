@@ -1,8 +1,8 @@
 <?php
 			include "includes567.php";
 			
-			dropEarlyTxTable();
-			createEarlyTxTable();
+			//dropEarlyTxTable();
+			//createEarlyTxTable();
 			//truncateEarlyTxTable();
 
 			$playerType = "Crew";
@@ -43,7 +43,8 @@
 					LEFT JOIN shielded_expedition.blocks 
 					ON transactions.block_id = blocks.block_id 
 					WHERE code_type <> 'none' AND memo = $1
-					ORDER BY header_height ASC LIMIT 20;",
+					ORDER BY header_height ASC LIMIT 20
+					ON CONFLICT (hash) DO NOTHING;",
 					[$publicKey]
 				);
 				echo "\nInserted $publicKey into early_tx table: " . ($result != false);
@@ -61,7 +62,8 @@
 						header_time text NOT NULL,
 						code_type text NOT NULL, 
 						hash bytea NOT NULL,
-						data json
+						data json,
+						UNIQUE(hash)
 					)
 				");
 			}

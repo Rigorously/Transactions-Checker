@@ -28,35 +28,43 @@ else
 			public_key character varying(255) NOT NULL,
 			score bigint NOT NULL DEFAULT 0,
 			player_type player_type NOT NULL,
+			rank integer NOT NULL,
 			PRIMARY KEY(id),
 			UNIQUE(address))'
 	);
 }
 
-$filename = 'crew-200-240416.csv';
+importFile('crew-200-240416-2.csv');
+importFile('pilots-100-240313.csv');
 
-// TODO
-//$filename = 'pilots-100-240313.csv';
+//TODO
 //$filename = 'team.csv';
 
-$file = fopen($filename, 'r');
-
-if ($file === false)
+function importFile($filename)
 {
-	die("Error opening file: $filename");
+	global $dbconn;
+	
+	$file = fopen($filename, 'r');
+
+	if ($file === false)
+	{
+		die("Error opening file: $filename");
+	}
+	
+	while (($row = fgetcsv($file)) !== false)
+	{
+		$row[4] = $row[4] ?? 'Unknown';
+		$res = pg_query_params($dbconn, 'INSERT INTO shielded_expedition.players (name, address, public_key, score, player_type, rank) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING', $row);
+		if ($res)
+		{
+			echo "Successfully stored {$row[0]}\n";
+		}
+		else
+		{
+			print_r($row);
+			die("User must have sent wrong inputs\n");
+		}
+	}
 }
 
-while (($row = fgetcsv($file)) !== false)
-{
-	$row[4] = $row[4] ?? 'Unknown';
-	$res = pg_query_params($dbconn, 'INSERT INTO shielded_expedition.players (name, address, public_key, score, player_type) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING', $row);
-	if ($res)
-	{
-		echo "Successfully stored {$row[0]}\n";
-	}
-	else
-	{
-		print_r($row);
-		die("User must have sent wrong inputs\n");
-	}
-}
+
