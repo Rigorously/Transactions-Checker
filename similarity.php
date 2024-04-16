@@ -249,8 +249,8 @@
 						{
 							$blockMatchClass = "match";
 						}
-						$list .= "<tr><td>#$ettxid</td><td><div class='code_type $typeMatchClass'>" . $thisPlayerCodeTypes[$ettxid] . "</div><div class='block $blockMatchClass'>" . $et['header_height'] . "</div>"
-							. "</td><td><div class='code_type $typeMatchClass'>" . $thatPlayerCodeType . "</div><div class='block $blockMatchClass'>" . $tpTransactions[$ettxid]['header_height'] . "</div></td></tr>\n";
+						$list .= "<tr><td>#$ettxid</td><td><div class='code_type $typeMatchClass'>" . $thisPlayerCodeTypes[$ettxid] . "</div><div class='block $blockMatchClass'>" . $et['header_height'] . " | " . $et['time'] . "</div>"
+							. "</td><td><div class='code_type $typeMatchClass'>" . $thatPlayerCodeType . "</div><div class='block $blockMatchClass'>" . $tpTransactions[$ettxid]['header_height'] . " | " . $tpTransactions[$ettxid]['time'] . "</div></td></tr>\n";
 					}
 					if ($numTransactions < $minTransactions)
 					{
@@ -331,7 +331,7 @@
 	function getEarlyTransactions($publicKey)
 	{
 		global $dbconn, $maxTransactions;
-		$result = pg_query_params($dbconn, "SELECT code_type, data->>'shielded' AS shielded, header_height
+		$result = pg_query_params($dbconn, "SELECT code_type, data->>'shielded' AS shielded, header_height, TO_CHAR(header_time::timestamp, 'YYYY-MM-DD HH24:MI:SS') AS time
 			FROM shielded_expedition.early_tx 
 			WHERE memo = $1
 			ORDER BY header_height ASC LIMIT $2;",
@@ -340,7 +340,7 @@
 		$obj = pg_fetch_all($result, PGSQL_ASSOC);
 		if (count($obj) == 0)
 		{
-			$result = pg_query_params($dbconn, "SELECT code_type, data->>'shielded' AS shielded, header_height
+			$result = pg_query_params($dbconn, "SELECT code_type, data->>'shielded' AS shielded, header_height, TO_CHAR(header_time::timestamp, 'YYYY-MM-DD HH24:MI:SS') AS time
 				FROM shielded_expedition.transactions 
 				LEFT JOIN shielded_expedition.blocks 
 				ON transactions.block_id = blocks.block_id 
