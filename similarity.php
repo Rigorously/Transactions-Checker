@@ -10,6 +10,7 @@
 		.moniker {
 			font-size: x-large;
 		}
+
 		td:nth-child(n+2) {
 			width: 45%;
 		}
@@ -24,6 +25,32 @@
 	$playerType = strtolower(strip_all($_GET["player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
 	$paramMinMatch = strip_all($_GET["min_match"] ?? 30);
 	$minMatchPercent = $paramMinMatch >= 0 && $paramMinMatch <= 100 ? $paramMinMatch : 30;
+
+	$txStrings = array(
+		'tx_become_validator' => 'Become Validator',
+		'tx_bond' => 'Bond',
+		'tx_bridge_pool' => 'Bridge Pool',
+		'tx_change_consensus_key' => 'Change Consensus Key',
+		'tx_change_validator_comission' => 'Change Validator Commission',
+		'tx_change_validator_metadata' => 'Change Validator Metadata',
+		'tx_claim_rewards' => 'Claim Rewards',
+		'tx_deactivate_validator' => 'Deactivate Validator',
+		'tx_ibc' => 'IBC',
+		'tx_init_account' => 'Init Account',
+		'tx_init_proposal' => 'Init Proposal',
+		'tx_reactivate_validator' => 'Reactivate Validator',
+		'tx_redelegate' => 'Redelegate',
+		'tx_resign_steward' => 'Resign Steward',
+		'tx_reveal_pk' => 'Reveal PK',
+		'tx_transfer' => 'Transfer',
+		'tx_transfert' => 'Transfer',
+		'tx_unbond' => 'Unbonx',
+		'tx_unjail_validator' => 'Unjail Validator',
+		'tx_update_account' => 'Update Account',
+		'tx_update_steward_commission' => 'Update Steward Commission',
+		'tx_vote_proposal' => 'Vote Proposal',
+		'tx_withdraw' => 'Withdraw'
+	);
 
 	?>
 	<h2>Compare the early transactions of a player with the top 100</h2>
@@ -117,7 +144,7 @@
 							$matches++;
 							$class = 'match';
 						}
-						$list .= "<tr class='$class'><td>#$ettxid</td><td>" . $et['code_type'] . "</td><td> " . $tpTransactions[$ettxid]['code_type'] . "</td></tr>\n";
+						$list .= "<tr class='$class'><td>#$ettxid</td><td>" . getTxDescription($et) . "</td><td> " . getTxDescription($tpTransactions[$ettxid]) . "</td></tr>\n";
 					}
 					if ($numTransactions == 0)
 					{
@@ -184,16 +211,16 @@
 	function getEarlyTransactions($publicKey)
 	{
 		global $dbconn, $maxTransactions;
-		$result = pg_query_params($dbconn, "SELECT code_type 
+		$result = pg_query_params($dbconn, "SELECT code_type, data->>'shielded' AS shielded
 			FROM shielded_expedition.early_tx 
 			WHERE memo = $1
 			ORDER BY header_height ASC LIMIT $2;",
 			[$publicKey, $maxTransactions]
-		);		
+		);
 		$obj = pg_fetch_all($result, PGSQL_ASSOC);
 		if (count($obj) == 0)
 		{
-			$result = pg_query_params($dbconn, "SELECT code_type 
+			$result = pg_query_params($dbconn, "SELECT code_type, data->>'shielded' AS shielded
 				FROM shielded_expedition.transactions 
 				LEFT JOIN shielded_expedition.blocks 
 				ON transactions.block_id = blocks.block_id 
@@ -204,6 +231,20 @@
 			$obj = pg_fetch_all($result, PGSQL_ASSOC);
 		}
 		return $obj;
+	}
+
+
+
+	function getTxDescription($tx)
+	{
+		global $txStrings;
+		$description = '';
+		if (isset($tx['shielded']))
+		{
+			$description = 'Shielded ';
+		}
+		$description .= $txStrings[$tx['code_type']] ?? $tx['code_type'];
+		return $description;
 	}
 
 	?>
