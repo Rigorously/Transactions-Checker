@@ -300,6 +300,19 @@
 			echo "<p>Player not found in database. Try <a href='" . modifyQueryString('player_type', $playerType) . "'>" . $playerType . "</a> database.</p>";
 		}
 	}
+	else
+	{
+		$topPlayers = getTopPlayers($playerType);
+		echo "<table class='topPlayers'>";
+		echo "<tr class='moniker'><td><div class='rank'>Rank</div></td><td>Moniker</td><td>ROIDs</td></tr>";
+		foreach ($topPlayers as $tp)
+		{
+			echo "<tr class='moniker'><td><div class='rank'>#" . $tp['rank'] . "</div></td>"
+			. "<td><div class='moniker'><a href='?identifier=" . $tp['name'] . "'>" . $tp['name'] . "</a></div></td>"
+			. "<td>" . number_format($tp['score']) . "</td></tr>";
+		}
+		echo "</table>";
+	}
 
 	function matchSort($a, $b)
 	{
