@@ -24,6 +24,15 @@
 			font-size: small;
 		}
 
+		.block {
+			font-size: small;
+		}
+
+		.score.match,
+		.block.match {
+			color: green;
+		}
+
 		.matchPercentage {
 			display: none;
 			font-size: small;
@@ -210,15 +219,21 @@
 							continue;
 						}
 						$numTransactions++;
-						$class = '';
+						$typeMatchClass = '';
+						$blockMatchClass = '';
 						$thatPlayerCodeType = getTxDescription($tpTransactions[$ettxid]);
 						$thatPlayerTxChars .= getTxChar($tpTransactions[$ettxid]);
 						if ($thisPlayerCodeTypes[$ettxid] == $thatPlayerCodeType)
 						{
 							$matches++;
-							$class = "class='match'";
+							$typeMatchClass = "match";
 						}
-						$list .= "<tr $class><td>#$ettxid</td><td>" . $thisPlayerCodeTypes[$ettxid] . "</td><td> " . $thatPlayerCodeType . "</td></tr>\n";
+						if ($et['header_height'] == $tpTransactions[$ettxid]['header_height'])
+						{
+							$blockMatchClass = "match";
+						}
+						$list .= "<tr><td>#$ettxid</td><td><div class='code_type $typeMatchClass'>" . $thisPlayerCodeTypes[$ettxid] . "</div><div class='block $blockMatchClass'>" . $et['header_height'] . "</div>"
+							. "</td><td><div class='code_type $typeMatchClass'>" . $thatPlayerCodeType . "</div><div class='block $blockMatchClass'>" . $tpTransactions[$ettxid]['header_height'] . "</div></td></tr>\n";
 					}
 					if ($numTransactions < $minTransactions)
 					{
@@ -230,11 +245,16 @@
 					$levenshtein = $damerauLevenshtein->getSimilarity();
 					if ($levenshtein <= $maxLevenshtein && $matchPercent >= $minMatchPercent)
 					{
+						$roidsMatchClass = '';
+						if ($player['score'] == $tp['score'])
+						{
+							$roidsMatchClass = 'match';
+						}
 						$header = "<tr class='moniker'><td><div class='levenshtein'>DL" . $levenshtein . "</div><div class='matchPercentage'>EM " . $matchPercent . "%</div></td><td>"
 							. "<div class='txchars'>$thisPlayerTxChars</div><div class='moniker'>" . $player['name'] . "</div>"
-							. "<div class='score'>ROIDs: " . number_format($player['score']) . "</div></td><td>"
+							. "<div class='score $roidsMatchClass'>ROIDs: " . number_format($player['score']) . "</div></td><td>"
 							. "<div class='txchars'>$thatPlayerTxChars</div><div class='moniker'>" . "<a href='" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a></div>"
-							. "<div class='score'>ROIDs: " . number_format($tp['score']) . "</div></td></tr>\n";
+							. "<div class='score $roidsMatchClass'>ROIDs: " . number_format($tp['score']) . "</div></td></tr>\n";
 						$match = [];
 						$match['matchPercent'] = $matchPercent;
 						$match['Levenshtein'] = $levenshtein;
@@ -294,7 +314,7 @@
 	function getEarlyTransactions($publicKey)
 	{
 		global $dbconn, $maxTransactions;
-		$result = pg_query_params($dbconn, "SELECT code_type, data->>'shielded' AS shielded
+		$result = pg_query_params($dbconn, "SELECT code_type, data->>'shielded' AS shielded, header_height
 			FROM shielded_expedition.early_tx 
 			WHERE memo = $1
 			ORDER BY header_height ASC LIMIT $2;",
@@ -303,7 +323,7 @@
 		$obj = pg_fetch_all($result, PGSQL_ASSOC);
 		if (count($obj) == 0)
 		{
-			$result = pg_query_params($dbconn, "SELECT code_type, data->>'shielded' AS shielded
+			$result = pg_query_params($dbconn, "SELECT code_type, data->>'shielded' AS shielded, header_height
 				FROM shielded_expedition.transactions 
 				LEFT JOIN shielded_expedition.blocks 
 				ON transactions.block_id = blocks.block_id 
