@@ -232,7 +232,7 @@
 					{
 						$header = "<tr class='moniker'><td><div class='levenshtein'>DL" . $levenshtein . "</div><div class='matchPercentage'>EM " . $matchPercent . "%</div></td><td>"
 							. "<div class='txchars'>$thisPlayerTxChars</div><div class='moniker'>" . $player['name'] . "</div>"
-							. "<div class='score'>ROIDs:" . number_format($player['score']) . "</div></td><td>"
+							. "<div class='score'>ROIDs: " . number_format($player['score']) . "</div></td><td>"
 							. "<div class='txchars'>$thatPlayerTxChars</div><div class='moniker'>" . "<a href='" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a></div>"
 							. "<div class='score'>ROIDs: " . number_format($tp['score']) . "</div></td></tr>\n";
 						$match = [];
