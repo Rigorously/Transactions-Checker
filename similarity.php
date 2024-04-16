@@ -140,12 +140,14 @@
 						}
 						$numTransactions++;
 						$class = '';
-						if ($et['code_type'] == $tpTransactions[$ettxid]['code_type'])
+						$thisPlayerCodeType = getTxDescription($et);
+						$thatPlayerCodeType = getTxDescription($tpTransactions[$ettxid]);
+						if ($thisPlayerCodeType == $thatPlayerCodeType)
 						{
 							$matches++;
 							$class = 'match';
 						}
-						$list .= "<tr class='$class'><td>#$ettxid</td><td>" . getTxDescription($et) . "</td><td> " . getTxDescription($tpTransactions[$ettxid]) . "</td></tr>\n";
+						$list .= "<tr class='$class'><td>#$ettxid</td><td>" . $thisPlayerCodeType . "</td><td> " . $thatPlayerCodeType . "</td></tr>\n";
 					}
 					if ($numTransactions < $minTransactions)
 					{
