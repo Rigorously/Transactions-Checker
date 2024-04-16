@@ -46,6 +46,12 @@
 	$maxTransactions = 20;
 	$maxTopPlayers = 200;
 
+	// Damerau–Levenshtein distance cost
+	$insCost = 1;
+	$delCost = 1;
+	$subCost = 1;
+	$transCost = 1;
+
 	$txStrings = array(
 		'tx_become_validator' => 'Become Validator',
 		'tx_bond' => 'Bond',
@@ -111,7 +117,8 @@
 			</select>
 			<label for="maxLevenshteinSlider">Highest Damerau-Levenshtein distance: </label><input type="range" min="0"
 				max="60" value="<?= $maxLevenshtein ?>" class="slider" name="max_levenshtein" id="maxLevenshteinSlider">
-			<span id="maxLevenshteinDisplay"></span>
+			<span id="maxLevenshteinDisplay"></span> 
+			<p>Damerau-Levenshtein edit distance cost: <br>Insertion: <?=$insCost?> Deletion: <?=$delCost?> Substitution: <?=$subCost?> Transposition: <?=$transCost?></p>
 			<label for="minMatchPercentSlider">Exactly matching transactions at least: </label><input type="range" min="0" max="100"
 				value="<?= $minMatchPercent ?>" class="slider" name="min_match" id="minMatchPercentSlider"> <span
 				id="minMatchPercentDisplay"></span>%
@@ -215,8 +222,8 @@
 						continue;
 					}
 					$matchPercent = round($matches / $numTransactions * 100);
-					//$levenshtein = levenshtein($thisPlayerTxChars, $thatPlayerTxChars, 1, 2, 1);
-					$damerauLevenshtein = new DamerauLevenshtein($thisPlayerTxChars, $thatPlayerTxChars, 2, 2, 1, 1);
+					$levenshtein = levenshtein($thisPlayerTxChars, $thatPlayerTxChars, $insCost, $subCost, $delCost);
+					$damerauLevenshtein = new DamerauLevenshtein($thisPlayerTxChars, $thatPlayerTxChars, $insCost, $delCost, $subCost, $transCost);
 					$levenshtein = $damerauLevenshtein->getSimilarity();
 					if ($levenshtein <= $maxLevenshtein && $matchPercent >= $minMatchPercent)
 					{
