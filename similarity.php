@@ -31,6 +31,7 @@
 		'tx_bond' => 'Bond',
 		'tx_bridge_pool' => 'Bridge Pool',
 		'tx_change_consensus_key' => 'Change Consensus Key',
+		'tx_change_validator_commission' => 'Change Validator Commission',
 		'tx_change_validator_comission' => 'Change Validator Commission',
 		'tx_change_validator_metadata' => 'Change Validator Metadata',
 		'tx_claim_rewards' => 'Claim Rewards',
