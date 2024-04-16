@@ -37,8 +37,8 @@
 			function populateEarlyTxTable($publicKey)
 			{
 				global $dbconn;
-				$result = pg_query_params($dbconn, "INSERT INTO shielded_expedition.early_tx (memo, header_height, code_type, hash, data)
-					SELECT memo, header_height, code_type, hash, data
+				$result = pg_query_params($dbconn, "INSERT INTO shielded_expedition.early_tx (memo, header_height, header_time, code_type, hash, data)
+					SELECT memo, header_height, header_time, code_type, hash, data
 					FROM shielded_expedition.transactions 
 					LEFT JOIN shielded_expedition.blocks 
 					ON transactions.block_id = blocks.block_id 
@@ -57,7 +57,8 @@
 					"CREATE TABLE IF NOT EXISTS 
 					shielded_expedition.early_tx (
 						memo bytea NOT NULL, 
-						header_height integer NOT NULL, 
+						header_height integer NOT NULL,
+						header_time text NOT NULL,
 						code_type text NOT NULL, 
 						hash bytea NOT NULL,
 						data json
