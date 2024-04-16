@@ -160,7 +160,8 @@
 			echo "<table><tr><td>Moniker</td><td>" . $player['name'] . "</td></tr>\n";
 			echo "<tr><td>Address</td><td>" . $player['address'] . "</td></tr>\n";
 			echo "<tr><td>Public key</td><td><a href='https://extended-nebb.kintsugi.tech/player/" . $player['public_key'] . "'>" . $player['public_key'] . "</a></td></tr>\n";
-			echo "<tr><td>Score</td><td>" . number_format($player['score']) . " as of March 13th</td></tr>\n";
+			$scoreboardTime = $playerType == 'Crew' ? "April 16th" : "March 13th";
+			echo "<tr><td>Score</td><td>" . number_format($player['score']) . " as of $scoreboardTime</td></tr>\n";
 			echo "</table>\n";
 
 			$earlyTransactions = getEarlyTransactions($player['public_key']);
