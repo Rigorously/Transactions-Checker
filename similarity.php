@@ -97,6 +97,7 @@
 	if ($identifier)
 	{
 		// TODO Configurable ranges
+		$minTransactions = 5;
 		$maxTransactions = 20;
 		$maxTopPlayers = 100;
 
@@ -146,7 +147,7 @@
 						}
 						$list .= "<tr class='$class'><td>#$ettxid</td><td>" . getTxDescription($et) . "</td><td> " . getTxDescription($tpTransactions[$ettxid]) . "</td></tr>\n";
 					}
-					if ($numTransactions == 0)
+					if ($numTransactions < $minTransactions)
 					{
 						continue;
 					}
