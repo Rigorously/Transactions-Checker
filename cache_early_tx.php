@@ -27,7 +27,7 @@
 				$result = pg_query_params($dbconn,"SELECT name, address, public_key, score 
 					FROM shielded_expedition.players 
 					WHERE player_type = $1
-					ORDER BY score DESC LIMIT 100;",
+					ORDER BY score DESC LIMIT 200;",
 					[$playerType]
 				);
 				$obj = pg_fetch_all($result, PGSQL_ASSOC);

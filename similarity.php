@@ -28,6 +28,7 @@
 	use Oefenweb\DamerauLevenshtein\DamerauLevenshtein;
 
 	include "includes567.php";
+
 	$filename = strip_all(basename($_SERVER['PHP_SELF']));
 	$identifier = strip_all($_GET["identifier"] ?? "");
 	$playerType = strtolower(strip_all($_GET["player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
@@ -39,6 +40,11 @@
 	$defaultMaxLevenshtein = 20;
 	$paramMaxLevenshtein = strip_all($_GET["max_levenshtein"] ?? $defaultMaxLevenshtein);
 	$maxLevenshtein = $paramMaxLevenshtein >= 0 && $paramMaxLevenshtein <= 100 ? $paramMaxLevenshtein : $defaultMaxLevenshtein;
+
+	// TODO Configurable ranges
+	$minTransactions = 5;
+	$maxTransactions = 20;
+	$maxTopPlayers = 200;
 
 	$txStrings = array(
 		'tx_become_validator' => 'Become Validator',
@@ -95,7 +101,7 @@
 	);
 
 	?>
-	<h2>Compare the early transactions of a player with the top 100</h2>
+	<h2>Compare the early transactions of a player with the top <?=$maxTopPlayers ?></h2>
 	<form action="<?php echo ($filename); ?>" method="get">
 		<p><label for="identifier">Moniker, address or public key:</label><input type="text" name="identifier"
 				id="identifier" size="80" value="<?php echo ($identifier); ?>">
@@ -147,12 +153,6 @@
 
 	if ($identifier)
 	{
-		// TODO Configurable ranges
-		$minTransactions = 5;
-		$maxTransactions = 20;
-		$maxTopPlayers = 100;
-
-
 		$player = getPlayer($identifier, $playerType);
 
 		if ($player)
