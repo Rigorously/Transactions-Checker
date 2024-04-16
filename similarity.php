@@ -24,6 +24,10 @@
 			display: block;
 		}
 
+		.small {
+			font-size: small;
+		}
+
 		.score {
 			font-size: small;
 		}
@@ -193,6 +197,7 @@
 		if ($player)
 		{
 			echo "<table class='col-15'><tr><td>Moniker</td><td>" . $player['name'] . "</td></tr>\n";
+			echo "<tr><td>Rank</td><td>" . $player['rank'] . "</td></tr>\n";
 			echo "<tr><td>Address</td><td>" . $player['address'] . "</td></tr>\n";
 			echo "<tr><td>Public key</td><td><a class='external' href='https://extended-nebb.kintsugi.tech/player/" . $player['public_key'] . "'>" . $player['public_key'] . "</a></td></tr>\n";
 			$scoreboardTime = $playerType == 'Crew' ? "April 16th" : "March 13th";
@@ -269,9 +274,9 @@
 						}
 						$header = "<tr class='moniker'><td><div class='levenshtein'>DL" . $levenshtein . "</div><div class='matchPercentage'>EM " . $matchPercent . "%</div></td><td>"
 							. "<div class='txchars'>$thisPlayerTxChars</div><div class='moniker'>" . $player['name'] . "</div>"
-							. "<div class='score $roidsMatchClass'>ROIDs: " . number_format($player['score']) . "</div></td><td>"
+							. "<div class='small'>#" . $player['rank'] . " <span class='score $roidsMatchClass'>ROIDs: " . number_format($player['score']) . "</span></div></td><td>"
 							. "<div class='txchars'>$thatPlayerTxChars</div><div class='moniker'>" . "<a href='" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a></div>"
-							. "<div class='score $roidsMatchClass'>ROIDs: " . number_format($tp['score']) . "</div></td></tr>\n";
+							. "<div class='small'>#" . $tp['rank'] . " <span class='score $roidsMatchClass'>ROIDs: " . number_format($tp['score']) . "</span></div></td></tr>\n";
 						$match = [];
 						$match['matchPercent'] = $matchPercent;
 						$match['Levenshtein'] = $levenshtein;
@@ -305,7 +310,7 @@
 	function getPlayer($identifier, $playerType)
 	{
 		global $dbconn;
-		$result = pg_query_params($dbconn, "SELECT address, name, public_key, score 
+		$result = pg_query_params($dbconn, "SELECT address, name, public_key, score, rank
 			FROM shielded_expedition.players 
 			WHERE (LOWER(public_key) = LOWER($1) OR LOWER(name) = LOWER($1) OR LOWER(address) = LOWER($1)) AND player_type = $2
 			ORDER BY score DESC LIMIT 1;",
@@ -318,7 +323,7 @@
 	function getTopPlayers($playerType)
 	{
 		global $dbconn, $maxTopPlayers;
-		$result = pg_query_params($dbconn, "SELECT name, address, public_key, score 
+		$result = pg_query_params($dbconn, "SELECT name, address, public_key, score, rank 
 			FROM shielded_expedition.players 
 			WHERE player_type = $1
 			ORDER BY score DESC LIMIT $2;",
