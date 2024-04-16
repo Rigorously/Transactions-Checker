@@ -44,7 +44,7 @@
 					ON transactions.block_id = blocks.block_id 
 					WHERE code_type <> 'none' AND memo = $1
 					ORDER BY header_height ASC LIMIT 20
-					ON CONFLICT (hash) DO NOTHING;",
+					ON CONFLICT DO NOTHING;",
 					[$publicKey]
 				);
 				echo "\nInserted $publicKey into early_tx table: " . ($result != false);

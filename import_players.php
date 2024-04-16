@@ -34,16 +34,15 @@ else
 	);
 }
 
-importFile('crew-200-240416-2.csv');
+//importFile('crew-200-240416-2.csv');
 importFile('pilots-100-240313.csv');
+//importFile('team.csv');
 
-//TODO
-//$filename = 'team.csv';
 
 function importFile($filename)
 {
 	global $dbconn;
-	
+
 	$file = fopen($filename, 'r');
 
 	if ($file === false)
