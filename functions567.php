@@ -165,13 +165,11 @@ function loadPlayerFromDatabase($address) {
       $obj = pg_fetch_object($result);
       $player = new Player();
 
-      if ($obj) {
-        $player->address = $obj->address;
-        $player->name = $obj->name ?? $address;
-        $player->publicKey = $obj->public_key ?? '';
-        $player->score = $obj->score ?? 0;
-        $player->playerType = $obj->player_type ?? $player->playerType;
-      }
+      $player->address = $obj->address ?? $address;
+      $player->name = $obj->name ?? $address;
+      $player->publicKey = $obj->public_key ?? '';
+      $player->score = $obj->score ?? 0;
+      $player->playerType = $obj->player_type ?? $player->playerType;
       
       $result = pg_query_params($dbconn, 'SELECT * FROM shielded_expedition.validators WHERE address = $1 LIMIT 1', [$address]);
       if ($result) {
