@@ -161,29 +161,28 @@ function loadPlayerFromDatabase($address) {
     } else {
       $result = pg_query_params($dbconn, 'SELECT * FROM shielded_expedition.players WHERE address = $1 LIMIT 1', [$address]);
     }
-    if ($result)
-    {
+    if ($result) {
       $obj = pg_fetch_object($result);
       $player = new Player();
-      $player->address = $obj->address;
-      $player->name = $obj->name ?? $address;
-      $player->publicKey = $obj->public_key ?? '';
-      $player->score = $obj->score ?? 0;
-      $player->playerType = $obj->player_type ?? $player->playerType;
+
+      if ($obj) {
+        $player->address = $obj->address;
+        $player->name = $obj->name ?? $address;
+        $player->publicKey = $obj->public_key ?? '';
+        $player->score = $obj->score ?? 0;
+        $player->playerType = $obj->player_type ?? $player->playerType;
+      }
       
       $result = pg_query_params($dbconn, 'SELECT * FROM shielded_expedition.validators WHERE address = $1 LIMIT 1', [$address]);
-      if ($result)
-      {
+      if ($result) {
         $obj = pg_fetch_object($result);
-        if ($obj)
-        {
+        if ($obj) {
           $player->isValidator = true;
           $label = "[Validator]";
           $player->isGenesis = $obj->genesis && $obj->genesis != 'f';
           if ($player->isGenesis) {
             $label = "[Genesis]";
-            if ($player->playerType == 'Unknown')
-            {
+            if ($player->playerType == 'Unknown') {
               $player->playerType = 'Genesis';
             }
           }
