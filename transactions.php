@@ -298,6 +298,8 @@ while ($line = pg_fetch_array($results, null, PGSQL_ASSOC)) {
 	} elseif ($col_value == $address) {
      $player = getPlayerFromAddress($address);
      echo ("<div class='current {$player->playerType}'>{$player->name}</div>");
+  } else if ($col_name == 'amount') {
+      echo (float)$col_value;
 	} else {
 	  echo($col_value);
 	}
