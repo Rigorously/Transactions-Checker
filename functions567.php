@@ -190,6 +190,7 @@ function loadPlayerFromDatabase($identifier) {
           }
           $player->name = $obj->name ? $obj->name : $player->name;
           $player->name .= " " . $label;
+          $player->address = $obj->address ?? $identifier;
         }
       }
 
