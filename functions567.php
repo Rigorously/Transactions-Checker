@@ -151,15 +151,15 @@ function getPlayerFromAddress($address) {
 }
 
 function loadPlayerFromDatabase($address) {
-  global $addressToPlayer;
+  global $dbconn, $addressToPlayer;
 
   if (!isset($addressToPlayer[$address])) {
     $is_public_key = validate_tpknam1($address);
     $result = null;
     if ($is_public_key) {
-      $result = pg_query_params('SELECT * FROM shielded_expedition.players WHERE public_key = $1 LIMIT 1', [$address]);  
+      $result = pg_query_params($dbconn, 'SELECT * FROM shielded_expedition.players WHERE public_key = $1 LIMIT 1', [$address]);  
     } else {
-      $result = pg_query_params('SELECT * FROM shielded_expedition.players WHERE address = $1 LIMIT 1', [$address]);
+      $result = pg_query_params($dbconn, 'SELECT * FROM shielded_expedition.players WHERE address = $1 LIMIT 1', [$address]);
     }
     if ($result)
     {
@@ -171,7 +171,7 @@ function loadPlayerFromDatabase($address) {
       $player->score = $obj->score ?? 0;
       $player->playerType = $obj->player_type ?? $player->playerType;
       
-      $result = pg_query_params('SELECT * FROM shielded_expedition.validators WHERE address = $1 LIMIT 1', [$address]);
+      $result = pg_query_params($dbconn, 'SELECT * FROM shielded_expedition.validators WHERE address = $1 LIMIT 1', [$address]);
       if ($result)
       {
         $obj = pg_fetch_object($result);
