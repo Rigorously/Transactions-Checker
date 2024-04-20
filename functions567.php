@@ -28,6 +28,16 @@ function validate_tpknam1($in) {
   return preg_match($reg_tpknam1, $in);
 }
 
+function validate_moniker($in) {
+  strip_all($in);
+  if (empty($in)) {
+    return false;
+  }
+  //TODO check if moniker exists
+  return true;
+}
+
+
 function validate_integer($in) {
   if (empty($in)) {
     return false;
@@ -150,28 +160,22 @@ function getPlayerFromAddress($address) {
   return $addressToPlayer[$address];
 }
 
-function loadPlayerFromDatabase($address) {
+function loadPlayerFromDatabase($identifier) {
   global $dbconn, $addressToPlayer;
 
-  if (!isset($addressToPlayer[$address])) {
-    $is_public_key = validate_tpknam1($address);
-    $result = null;
-    if ($is_public_key) {
-      $result = pg_query_params($dbconn, 'SELECT * FROM shielded_expedition.players WHERE public_key = $1 LIMIT 1', [$address]);  
-    } else {
-      $result = pg_query_params($dbconn, 'SELECT * FROM shielded_expedition.players WHERE address = $1 LIMIT 1', [$address]);
-    }
+  if (!isset($addressToPlayer[$identifier])) {
+    $result = pg_query_params($dbconn, 'SELECT * FROM shielded_expedition.players WHERE (LOWER(public_key) = LOWER($1) OR LOWER(name) = LOWER($1) OR LOWER(address) = LOWER($1)) LIMIT 1', [$identifier]);
     if ($result) {
       $obj = pg_fetch_object($result);
       $player = new Player();
 
-      $player->address = $obj->address ?? $address;
-      $player->name = $obj->name ?? $address;
+      $player->address = $obj->address ?? $identifier;
+      $player->name = $obj->name ?? $identifier;
       $player->publicKey = $obj->public_key ?? '';
       $player->score = $obj->score ?? 0;
       $player->playerType = $obj->player_type ?? $player->playerType;
       
-      $result = pg_query_params($dbconn, 'SELECT * FROM shielded_expedition.validators WHERE address = $1 LIMIT 1', [$address]);
+      $result = pg_query_params($dbconn, 'SELECT * FROM shielded_expedition.validators WHERE  (LOWER(name) = LOWER($1) OR LOWER(address) = LOWER($1))  LIMIT 1', [$identifier]);
       if ($result) {
         $obj = pg_fetch_object($result);
         if ($obj) {
@@ -189,9 +193,19 @@ function loadPlayerFromDatabase($address) {
         }
       }
 
-      // if $address is a public key, add as both address and public key
-      $addressToPlayer[$address] = $player;
-      $addressToPlayer[$player->address] = $player;
+      // Add lookup keys
+      if (strlen($identifier > 0)) {
+        $addressToPlayer[$identifier] = $player;
+      }
+      if (strlen($player->name) > 0) {
+        $addressToPlayer[$player->name] = $player;
+      }
+      if (validate_tnam1($player->address)) {
+        $addressToPlayer[$player->address] = $player;
+      }
+      if (validate_tpknam1($player->publicKey)) {
+        $addressToPlayer[$player->publicKey] = $player;
+      }
     }
   }
 }

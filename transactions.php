@@ -19,7 +19,7 @@ $addressToPlayer = [];
 
 //validate all inputs and reset the sht if anyone has tried passing badness
 $is_address = validate_tnam1($address);
-$is_public_key = validate_tpknam1($address);
+$is_public_key = validate_tpknam1($address) || validate_moniker($address);
 if ($is_public_key) {
   $player = getPlayerFromAddress($address);
   $address = $player->address;
@@ -122,7 +122,7 @@ if (!empty($error)) {
 
 
 <form action="<?php echo($filename);?>" method="get">
-	Address or public key: <input type="text" name="address" size="41" value="<?php echo($address);?>"><br>
+	Address, public key or moniker: <input type="text" name="address" size="41" value="<?php echo($address);?>"><br>
 	<button type="submit" name="mode" value="transactions">Check Transactions</button> 
 	<button type="submit" name="mode" value="connected">Check Connected Wallets</button><br><br>
 	Sort by <select name="sort">
