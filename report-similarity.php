@@ -190,6 +190,7 @@
 		if ($player)
 		{
 			$earlyTransactions = getEarlyTransactions($player['public_key']);
+			$player['num_transactions'] = count($earlyTransactions);
 			$thisPlayerCodeTypes = [];
 			$thisPlayerTxChars = '';
 			foreach ($earlyTransactions as $ettxid => $et)
@@ -198,7 +199,7 @@
 				$thisPlayerTxChars .= getTxChar($et);
 			}
 
-			if (count($earlyTransactions) == 0)
+			if (false) //$player['num_transactions'] == 0
 			{
 				echo "<p>Player {$player['name']} has no transactions</p>";
 			}
@@ -207,7 +208,7 @@
 				$matchPool = [];
 				foreach ($topPlayers as $tp)
 				{
-					if ($tp['public_key'] == $player['public_key'])
+					if ($player['num_transactions'] == 0 || $tp['public_key'] == $player['public_key'])
 					{
 						continue;
 					}
@@ -247,24 +248,23 @@
 					$levenshtein = levenshtein($thisPlayerTxChars, $thatPlayerTxChars, $insCost, $subCost, $delCost);
 					$damerauLevenshtein = new DamerauLevenshtein($thisPlayerTxChars, $thatPlayerTxChars, $insCost, $delCost, $subCost, $transCost);
 					$levenshtein = $damerauLevenshtein->getSimilarity();
-					if ($levenshtein <= $maxLevenshtein && $matchPercent >= $minMatchPercent)
+					
+					$roidsMatchClass = '';
+					if ($player['score'] == $tp['score'])
 					{
-						$roidsMatchClass = '';
-						if ($player['score'] == $tp['score'])
-						{
-							$roidsMatchClass = 'match';
-						}
-						$header = "<tr class='moniker'><td><div class='levenshtein'>DL" . $levenshtein . "</div><div class='matchPercentage'>EM " . $matchPercent . "%</div></td><td>"
-							. "<div class='txchars'>$thisPlayerTxChars</div><div class='moniker'><a href='similarity.php?identifier='" . $player['name'] . "'>" . $player['name'] ."</a></div>"
-							. "<div class='small'>#" . $player['rank'] . " <span class='score $roidsMatchClass'>ROIDs: " . number_format($player['score']) . "</span></div></td><td>"
-							. "<div class='txchars'>$thatPlayerTxChars</div><div class='moniker'>" . "<a href=similarity.php?identifier='" . $tp['name'] . "'>" . $tp['name'] . "</a></div>"
-							. "<div class='small'>#" . $tp['rank'] . " <span class='score $roidsMatchClass'>ROIDs: " . number_format($tp['score']) . "</span></div></td></tr>\n";
-						$match = [];
-						$match['matchPercent'] = $matchPercent;
-						$match['Levenshtein'] = $levenshtein;
-						$match['header'] = $header;
-						$matchPool[] = $match;
+						$roidsMatchClass = 'match';
 					}
+					$header = "<tr class='moniker'><td><div class='levenshtein'>DL" . $levenshtein . "</div><div class='matchPercentage'>EM " . $matchPercent . "%</div></td><td>"
+						. "<div class='txchars'>$thisPlayerTxChars</div><div class='moniker'><a href='similarity.php" . modifyQueryString('identifier', $player['name']) . "'>" . $player['name'] ."</a></div>"
+						. "<div class='small'>#" . $player['rank'] . " <span class='score $roidsMatchClass'>ROIDs: " . number_format($player['score']) . "</span></div></td><td>"
+						. "<div class='txchars'>$thatPlayerTxChars</div><div class='moniker'>" . "<a href=similarity.php'" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a></div>"
+						. "<div class='small'>#" . $tp['rank'] . " <span class='score $roidsMatchClass'>ROIDs: " . number_format($tp['score']) . "</span></div></td></tr>\n";
+					$match = [];
+					$match['matchPercent'] = $matchPercent;
+					$match['Levenshtein'] = $levenshtein;
+					$match['header'] = $header;
+					$matchPool[] = $match;
+					
 				}
 			
 				// Get the lowest DL
@@ -282,8 +282,8 @@
 					$playerReport = [];
 					$playerReport['Levenshtein'] = -1;
 					$match['matchPercent'] = 100;
-					$header = "<tr class='moniker'><td><div class='moniker'><a href='similarity.php?identifier=" . $player['name'] . "'>" . $player['name'] ."</a></div>"
-					. "<div class='small'>#" . $player['rank'] . " <span class='score $roidsMatchClass'>ROIDs: " . number_format($player['score']) . "</span></div></td><td>No transactions</td></tr>\n";
+					$header = "<tr class='moniker'><td><div class='moniker'><a href='similarity.php" . modifyQueryString('identifier', $player['name']) . "'>" . $player['name'] ."</a></div>"
+					. "<div class='small'>#" . $player['rank'] . " <span>ROIDs: " . number_format($player['score']) . "</span></div></td><td>Not enough transactions: " . $player['num_transactions'] . "</td></tr>\n";
 					$playerReport['header'] = $header;
 					$playerReports[] = $playerReport;
 				}
@@ -291,8 +291,8 @@
 		}
 		else
 		{
-			$playerType = $playerType == 'Crew' ? 'Pilot' : 'Crew';
-			echo "<p>Player not found in database. Try <a href='" . modifyQueryString('player_type', $playerType) . "'>" . $playerType . "</a> database.</p>";
+			//$playerType = $playerType == 'Crew' ? 'Pilot' : 'Crew';
+			//echo "<p>Player not found in database. Try <a href='" . modifyQueryString('player_type', $playerType) . "'>" . $playerType . "</a> database.</p>";
 		}
 	}
 
