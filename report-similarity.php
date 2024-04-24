@@ -257,7 +257,7 @@
 					$header = "<tr class='moniker'><td><div class='levenshtein'>DL" . $levenshtein . "</div><div class='matchPercentage'>EM " . $matchPercent . "%</div></td><td>"
 						. "<div class='txchars'>$thisPlayerTxChars</div><div class='moniker'><a href='similarity.php" . modifyQueryString('identifier', $player['name']) . "'>" . $player['name'] ."</a></div>"
 						. "<div class='small'>#" . $player['rank'] . " <span class='score $roidsMatchClass'>ROIDs: " . number_format($player['score']) . "</span></div></td><td>"
-						. "<div class='txchars'>$thatPlayerTxChars</div><div class='moniker'>" . "<a href=similarity.php" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a></div>"
+						. "<div class='txchars'>$thatPlayerTxChars</div><div class='moniker'>" . "<a href='similarity.php" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a></div>"
 						. "<div class='small'>#" . $tp['rank'] . " <span class='score $roidsMatchClass'>ROIDs: " . number_format($tp['score']) . "</span></div></td></tr>\n";
 					$match = [];
 					$match['matchPercent'] = $matchPercent;
