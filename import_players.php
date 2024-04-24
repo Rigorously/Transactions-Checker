@@ -34,9 +34,9 @@ else
 	);
 }
 
-//importFile('crew-200-240416-2.csv');
-importFile('pilots-100-240313.csv');
-//importFile('team.csv');
+importFile('crew-200-240424.csv');
+importFile('pilots-200-240424.csv');
+importFile('team.csv');
 
 
 function importFile($filename)
