@@ -1,29 +1,28 @@
 <?php
 			include "includes567.php";
 			
-			//dropEarlyTxTable();
-			//createEarlyTxTable();
-			//truncateEarlyTxTable();
+			//dropEarlyTxTable($dbconn);
+			//createEarlyTxTable($dbconn);
+			truncateEarlyTxTable($dbconn);
 
 			$playerType = "Crew";
-			$topPlayers = getTopPlayers($playerType);
+			$topPlayers = getTopPlayers($dbconn, $playerType);
 
 			foreach ($topPlayers as $tp)
 			{
-				populateEarlyTxTable($tp['public_key']);
+				populateEarlyTxTable($dbconn, $playerType, $tp['public_key']);
 			}
 
 			$playerType = "Pilot";
-			$topPlayers = getTopPlayers($playerType);
+			$topPlayers = getTopPlayers($dbconn, $playerType);
 
 			foreach ($topPlayers as $tp)
 			{
-				populateEarlyTxTable($tp['public_key']);
+				populateEarlyTxTable($dbconn, $playerType, $tp['public_key']);
 			}
 
-			function getTopPlayers($playerType)
+			function getTopPlayers($dbconn, $playerType)
 			{
-				global $dbconn;
 				$result = pg_query_params($dbconn,"SELECT name, address, public_key, score 
 					FROM shielded_expedition.players 
 					WHERE player_type = $1
@@ -34,15 +33,14 @@
 				return $obj;
 			}
 
-			function populateEarlyTxTable($publicKey)
+			function populateEarlyTxTable($dbconn, $playerType, $publicKey)
 			{
-				global $dbconn;
 				$result = pg_query_params($dbconn, "INSERT INTO shielded_expedition.early_tx (memo, header_height, header_time, code_type, hash, data)
 					SELECT memo, header_height, header_time, code_type, hash, data
 					FROM shielded_expedition.transactions 
 					LEFT JOIN shielded_expedition.blocks 
 					ON transactions.block_id = blocks.block_id 
-					WHERE code_type <> 'none' AND memo = $1
+					WHERE code_type <> 'none' AND code_type <> 'tx_vote_proposal' AND memo = $1 
 					ORDER BY header_height ASC LIMIT 20
 					ON CONFLICT DO NOTHING;",
 					[$publicKey]
@@ -50,7 +48,7 @@
 				echo "\nInserted $publicKey into early_tx table: " . ($result != false);
 			}
 
-			function createEarlyTxTable()
+			function createEarlyTxTable($dbconn)
 			{
 				echo "\nCreating early_tx table";
 				global $dbconn;
@@ -68,18 +66,47 @@
 				");
 			}
 
-			function truncateEarlyTxTable()
+			function truncateEarlyTxTable($dbconn)
 			{
 				echo "\nTruncating early_tx table";
-				global $dbconn;
 				$result = pg_query($dbconn, "TRUNCATE shielded_expedition.early_tx;");
 			}
 
-			function dropEarlyTxTable()
+			function dropEarlyTxTable($dbconn)
 			{
 				echo "\nDropping early_tx table";
-				global $dbconn;
 				$result = pg_query($dbconn, "DROP TABLE shielded_expedition.early_tx;");
+			}
+
+			function populateTxcharsTable($dbconn, $playerType, $publicKey)
+			{
+				// TODO populate txchars table
+				$result = false;
+				echo "\nInserted $publicKey into txchars table: " . ($result != false);
+			}
+
+			function createTxcharsTable($dbconn)
+			{
+				echo "\nCreating txchars table";
+				$result = pg_query($dbconn, 
+					"CREATE TABLE IF NOT EXISTS 
+					shielded_expedition.txchars(
+						memo bytea,
+						txchars varchar(255
+					)
+				");
+			}
+
+			function truncateTxcharsTable($dbconn)
+			{
+				echo "\nTruncating txchars table";
+				$result = pg_query($dbconn, "TRUNCATE shielded_expedition.txchars;");
+			}
+
+			function dropTxcharsTable($dbconn)
+			{
+				echo "\nDropping txchars table";
+				$result = pg_query($dbconn, "DROP TABLE shielded_expedition.txchars;");
 			}
 
 			function createIndices()
