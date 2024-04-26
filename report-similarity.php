@@ -355,7 +355,7 @@
 			$dbconn,
 			"SELECT code_type, data->>'shielded' AS shielded, header_height, TO_CHAR(header_time::timestamp, 'YYYY-MM-DD HH24:MI:SS') AS time
 			FROM shielded_expedition.early_tx 
-			WHERE memo = $1 AND code_type <> 'tx_vote_proposal' 
+			WHERE memo = $1 AND code_type <> 'tx_vote_proposal' AND code_type <> 'tx_init_account' 
 			ORDER BY header_height ASC LIMIT $2;",
 			[$publicKey, $maxTransactions]
 		);
@@ -368,7 +368,7 @@
 				FROM shielded_expedition.transactions 
 				LEFT JOIN shielded_expedition.blocks 
 				ON transactions.block_id = blocks.block_id 
-				WHERE code_type <> 'none' AND memo = $1 AND code_type <> 'tx_vote_proposal' 
+				WHERE code_type <> 'none' AND memo = $1 AND code_type <> 'tx_vote_proposal' AND code_type <> 'tx_init_account' 
 				ORDER BY header_height ASC LIMIT $2;",
 				[$publicKey, $maxTransactions]
 			);

@@ -40,7 +40,7 @@
 					FROM shielded_expedition.transactions 
 					LEFT JOIN shielded_expedition.blocks 
 					ON transactions.block_id = blocks.block_id 
-					WHERE code_type <> 'none' AND code_type <> 'tx_vote_proposal' AND memo = $1 
+					WHERE code_type <> 'none' AND code_type <> 'tx_vote_proposal' AND code_type <> 'tx_init_account' AND memo = $1 
 					ORDER BY header_height ASC LIMIT 20
 					ON CONFLICT DO NOTHING;",
 					[$publicKey]
