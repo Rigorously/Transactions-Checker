@@ -66,10 +66,11 @@
 
 <body>
 	<?php
-	include "DamerauLevenshtein.php";
+	require_once "DamerauLevenshtein.php";
 	use Oefenweb\DamerauLevenshtein\DamerauLevenshtein;
 
-	include "includes567.php";
+	require_once "includes567.php";
+	require_once "txchars.php";
 
 	$filename = strip_all(basename($_SERVER['PHP_SELF']));
 	$identifier = strip_all($_GET["identifier"] ?? "");
@@ -93,60 +94,6 @@
 	$delCost = 1;
 	$subCost = 1;
 	$transCost = 1;
-
-	$txStrings = array(
-		'tx_become_validator' => 'Become Validator',
-		'tx_bond' => 'Bond',
-		'tx_bridge_pool' => 'Bridge Pool',
-		'tx_change_consensus_key' => 'Change Consensus Key',
-		'tx_change_validator_commission' => 'Change Validator Commission',
-		'tx_change_validator_comission' => 'Change Validator Commission',
-		'tx_change_validator_metadata' => 'Change Validator Metadata',
-		'tx_claim_rewards' => 'Claim Rewards',
-		'tx_deactivate_validator' => 'Deactivate Validator',
-		'tx_ibc' => 'IBC',
-		'tx_init_account' => 'Init Account',
-		'tx_init_proposal' => 'Init Proposal',
-		'tx_reactivate_validator' => 'Reactivate Validator',
-		'tx_redelegate' => 'Redelegate',
-		'tx_resign_steward' => 'Resign Steward',
-		'tx_reveal_pk' => 'Reveal PK',
-		'tx_transfer' => 'Transfer',
-		'tx_transfert' => 'Transfer',
-		'tx_unbond' => 'Unbond',
-		'tx_unjail_validator' => 'Unjail Validator',
-		'tx_update_account' => 'Update Account',
-		'tx_update_steward_commission' => 'Update Steward Commission',
-		'tx_vote_proposal' => 'Vote Proposal',
-		'tx_withdraw' => 'Withdraw'
-	);
-
-	$txChars = array(
-		'tx_become_validator' => 'a',
-		'tx_bond' => 'b',
-		'tx_bridge_pool' => 'c',
-		'tx_change_consensus_key' => 'd',
-		'tx_change_validator_commission' => 'e',
-		'tx_change_validator_comission' => 'e',
-		'tx_change_validator_metadata' => 'f',
-		'tx_claim_rewards' => 'g',
-		'tx_deactivate_validator' => 'h',
-		'tx_ibc' => 'i',
-		'tx_init_account' => 'j',
-		'tx_init_proposal' => 'k',
-		'tx_reactivate_validator' => 'l',
-		'tx_redelegate' => 'm',
-		'tx_resign_steward' => 'n',
-		'tx_reveal_pk' => 'o',
-		'tx_transfer' => 'p',
-		'tx_transfert' => 'p',
-		'tx_unbond' => 'q',
-		'tx_unjail_validator' => 'r',
-		'tx_update_account' => 's',
-		'tx_update_steward_commission' => 't',
-		'tx_vote_proposal' => 'u',
-		'tx_withdraw' => 'v'
-	);
 
 	?>
 	<h2>Compare the early transactions of a player with the top <?= $maxTopPlayers ?></h2>
