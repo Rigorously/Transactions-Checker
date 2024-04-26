@@ -255,7 +255,7 @@
 		foreach ($topPlayers as $tp)
 		{
 			echo "<tr class='moniker'><td><div class='rank'>#" . $tp['rank'] . "</div></td>"
-			. "<td><div class='moniker'><a href='?identifier=" . $tp['name'] . "'>" . $tp['name'] . "</a></div></td>"
+			. "<td><div class='moniker'><a href='" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a></div></td>"
 			. "<td>" . number_format($tp['score']) . "</td></tr>";
 		}
 		echo "</table>";
