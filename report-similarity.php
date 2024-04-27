@@ -1,104 +1,47 @@
+<?php
+
+require_once "DamerauLevenshtein.php";
+
+use Oefenweb\DamerauLevenshtein\DamerauLevenshtein;
+
+require_once "includes567.php";
+require_once "txchars.php";
+require_once "similarity_shared.php";
+
+$filename = strip_all(basename($_SERVER['PHP_SELF']));
+$identifier = strip_all($_GET["identifier"] ?? "");
+$playerType = strtolower(strip_all($_GET["player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
+
+$defaultMinMatch = 30;
+$paramMinMatch = strip_all($_GET["min_match"] ?? $defaultMinMatch);
+$minMatchPercent = $paramMinMatch >= 0 && $paramMinMatch <= 100 ? $paramMinMatch : $defaultMinMatch;
+
+$defaultMaxLevenshtein = 20;
+$paramMaxLevenshtein = strip_all($_GET["max_levenshtein"] ?? $defaultMaxLevenshtein);
+$maxLevenshtein = $paramMaxLevenshtein >= 0 && $paramMaxLevenshtein <= 100 ? $paramMaxLevenshtein : $defaultMaxLevenshtein;
+
+// TODO Configurable ranges
+$minTransactions = 5;
+$maxTransactions = 20;
+$maxTopPlayers = 200;
+
+// Damerau–Levenshtein distance cost
+$insCost = 1;
+$delCost = 1;
+$subCost = 1;
+$transCost = 1;
+
+?>
+
 <html>
 
 <head>
+	<title>Report: Top Players similarity</title>
 	<link rel="stylesheet" href="simple.min.css">
-	<style>
-		.match {
-			font-weight: bold;
-		}
-
-		.moniker {
-			font-size: x-large;
-		}
-
-		td:nth-child(n+2) {
-			width: 45%;
-		}
-
-		table.col-15 td:first-child {
-			width: 15%;
-		}
-
-		.txchars {
-			font-size: small;
-			display: block;
-		}
-
-		.small {
-			font-size: small;
-		}
-
-		.score {
-			font-size: small;
-		}
-
-		.block {
-			font-size: small;
-		}
-
-		.score.match,
-		.block.match {
-			color: green;
-		}
-
-		.matchPercentage {
-			display: none;
-			font-size: small;
-		}
-
-		.levenshtein:hover+.matchPercentage {
-			display: block;
-		}
-
-		a.external::after {
-			content: "";
-			width: 11px;
-			height: 11px;
-			margin-left: 4px;
-			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z'/%3E%3Cpath fill-rule='evenodd' d='M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z'/%3E%3C/svg%3E");
-			background-position: center;
-			background-repeat: no-repeat;
-			background-size: contain;
-			display: inline-block;
-		}
-	</style>
+	<link rel="stylesheet" href="similarity.css">
 </head>
 
 <body>
-	<?php
-
-	require_once "DamerauLevenshtein.php";
-
-	use Oefenweb\DamerauLevenshtein\DamerauLevenshtein;
-
-	require_once "includes567.php";
-	require_once "txchars.php";
-	require_once "similarity_shared.php";
-
-	$filename = strip_all(basename($_SERVER['PHP_SELF']));
-	$identifier = strip_all($_GET["identifier"] ?? "");
-	$playerType = strtolower(strip_all($_GET["player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
-
-	$defaultMinMatch = 30;
-	$paramMinMatch = strip_all($_GET["min_match"] ?? $defaultMinMatch);
-	$minMatchPercent = $paramMinMatch >= 0 && $paramMinMatch <= 100 ? $paramMinMatch : $defaultMinMatch;
-
-	$defaultMaxLevenshtein = 20;
-	$paramMaxLevenshtein = strip_all($_GET["max_levenshtein"] ?? $defaultMaxLevenshtein);
-	$maxLevenshtein = $paramMaxLevenshtein >= 0 && $paramMaxLevenshtein <= 100 ? $paramMaxLevenshtein : $defaultMaxLevenshtein;
-
-	// TODO Configurable ranges
-	$minTransactions = 5;
-	$maxTransactions = 20;
-	$maxTopPlayers = 200;
-
-	// Damerau–Levenshtein distance cost
-	$insCost = 1;
-	$delCost = 1;
-	$subCost = 1;
-	$transCost = 1;
-
-	?>
 	<h2>Report: early transaction type sequence similarity of the top <?= $maxTopPlayers ?></h2>
 	<p>The transactions types of the first 20 transactions of each top <?= $maxTopPlayers ?> are compared. This report lists the matches with the least differences. Players whose transactions match the most with another player's transactions are listed at the top. For Pilots this is less of a red flag, as some tasks involved repeating certain transaction types.</p>
 	<form action="<?php echo ($filename); ?>" method="get">
@@ -195,14 +138,14 @@
 					$levenshtein = levenshtein($thisPlayerTxChars, $thatPlayerTxChars, $insCost, $subCost, $delCost);
 					$damerauLevenshtein = new DamerauLevenshtein($thisPlayerTxChars, $thatPlayerTxChars, $insCost, $delCost, $subCost, $transCost);
 					$levenshtein = $damerauLevenshtein->getSimilarity();
-					
+
 					$roidsMatchClass = '';
 					if ($player['score'] == $tp['score'])
 					{
 						$roidsMatchClass = 'match';
 					}
 					$header = "<tr class='moniker'><td><div class='levenshtein'>DL" . $levenshtein . "</div><div class='matchPercentage'>EM " . $matchPercent . "%</div></td><td>"
-						. "<div class='txchars'>$thisPlayerTxChars</div><div class='moniker'><a href='similarity.php" . modifyQueryString('identifier', $player['name']) . "'>" . $player['name'] ."</a></div>"
+						. "<div class='txchars'>$thisPlayerTxChars</div><div class='moniker'><a href='similarity.php" . modifyQueryString('identifier', $player['name']) . "'>" . $player['name'] . "</a></div>"
 						. "<div class='small'>#" . $player['rank'] . " <span class='score $roidsMatchClass'>ROIDs: " . number_format($player['score']) . "</span></div></td><td>"
 						. "<div class='txchars'>$thatPlayerTxChars</div><div class='moniker'>" . "<a href='similarity.php" . modifyQueryString('identifier', $tp['name']) . "'>" . $tp['name'] . "</a></div>"
 						. "<div class='small'>#" . $tp['rank'] . " <span class='score $roidsMatchClass'>ROIDs: " . number_format($tp['score']) . "</span></div></td></tr>\n";
@@ -211,9 +154,8 @@
 					$match['Levenshtein'] = $levenshtein;
 					$match['header'] = $header;
 					$matchPool[] = $match;
-					
 				}
-			
+
 				// Get the lowest DL
 				if (!empty($matchPool))
 				{
@@ -229,8 +171,8 @@
 					$playerReport = [];
 					$playerReport['Levenshtein'] = -1;
 					$match['matchPercent'] = 100;
-					$header = "<tr class='moniker'><td><div class='moniker'><a href='similarity.php" . modifyQueryString('identifier', $player['name']) . "'>" . $player['name'] ."</a></div>"
-					. "<div class='small'>#" . $player['rank'] . " <span>ROIDs: " . number_format($player['score']) . "</span></div></td><td>Not enough transactions: " . $player['num_transactions'] . "</td></tr>\n";
+					$header = "<tr class='moniker'><td><div class='moniker'><a href='similarity.php" . modifyQueryString('identifier', $player['name']) . "'>" . $player['name'] . "</a></div>"
+						. "<div class='small'>#" . $player['rank'] . " <span>ROIDs: " . number_format($player['score']) . "</span></div></td><td>Not enough transactions: " . $player['num_transactions'] . "</td></tr>\n";
 					$playerReport['header'] = $header;
 					$playerReports[] = $playerReport;
 				}
@@ -250,10 +192,7 @@
 		echo $report['header'];
 		echo "</table>";
 	}
-
-
-
-
+	
 	?>
 
 </body>
