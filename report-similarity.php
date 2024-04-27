@@ -73,6 +73,7 @@
 
 	require_once "includes567.php";
 	require_once "txchars.php";
+	require_once "similarity_shared.php";
 
 	$filename = strip_all(basename($_SERVER['PHP_SELF']));
 	$identifier = strip_all($_GET["identifier"] ?? "");
@@ -129,14 +130,13 @@
 	<?php
 
 	$playerReports = [];
-	$topPlayers = getTopPlayers($playerType);
-	$earlyTransactionsCache = [];
+	$topPlayers = getTopPlayers($dbconn, $playerType, $maxTopPlayers);
 
 	foreach ($topPlayers as $player)
 	{
 		if ($player)
 		{
-			$earlyTransactions = getEarlyTransactions($player['public_key']);
+			$earlyTransactions = getEarlyTransactions($dbconn, $player['public_key'], $maxTransactions);
 			$player['num_transactions'] = count($earlyTransactions);
 			$thisPlayerCodeTypes = [];
 			$thisPlayerTxChars = '';
@@ -162,7 +162,7 @@
 					$matches = 0;
 					$numTransactions = 0;
 
-					$tpTransactions = getEarlyTransactions($tp['public_key']);
+					$tpTransactions = getEarlyTransactions($dbconn, $tp['public_key'], $maxTransactions);
 
 					$list = "";
 					$thatPlayerTxChars = '';
@@ -253,119 +253,6 @@
 
 
 
-	function matchSort($a, $b)
-	{
-		return $a['Levenshtein'] > $b['Levenshtein'];
-		//return $a['matchPercent'] < $b['matchPercent'];
-	}
-
-	function getPlayer($identifier, $playerType)
-	{
-		global $dbconn;
-		$result = pg_query_params(
-			$dbconn,
-			"SELECT address, name, public_key, score, rank
-			FROM shielded_expedition.players 
-			WHERE (LOWER(public_key) = LOWER($1) OR LOWER(name) = LOWER($1) OR LOWER(address) = LOWER($1)) AND player_type = $2
-			ORDER BY score DESC LIMIT 1;",
-			[$identifier, $playerType]
-		);
-		$obj = pg_fetch_array($result, null, PGSQL_ASSOC);
-		return $obj;
-	}
-
-	function getTopPlayers($playerType)
-	{
-		global $dbconn, $maxTopPlayers;
-		$result = pg_query_params(
-			$dbconn,
-			"SELECT name, address, public_key, score, rank 
-			FROM shielded_expedition.players 
-			WHERE player_type = $1
-			ORDER BY score DESC LIMIT $2;",
-			[$playerType, $maxTopPlayers]
-		);
-		$obj = pg_fetch_all($result, PGSQL_ASSOC);
-		return $obj;
-	}
-
-	function getEarlyTransactions($publicKey)
-	{
-		global $dbconn, $maxTransactions, $earlyTransactionsCache;
-
-		if (isset($earlyTransactionsCache[$publicKey]))
-		{
-			return $earlyTransactionsCache[$publicKey];
-		}
-
-		$result = pg_query_params(
-			$dbconn,
-			"SELECT code_type, data->>'shielded' AS shielded, header_height, TO_CHAR(header_time::timestamp, 'YYYY-MM-DD HH24:MI:SS') AS time
-			FROM shielded_expedition.early_tx 
-			WHERE memo = $1 AND code_type <> 'tx_vote_proposal' AND code_type <> 'tx_init_account' 
-			ORDER BY header_height ASC LIMIT $2;",
-			[$publicKey, $maxTransactions]
-		);
-		$obj = pg_fetch_all($result, PGSQL_ASSOC);
-		if (count($obj) == 0)
-		{
-			$result = pg_query_params(
-				$dbconn,
-				"SELECT code_type, data->>'shielded' AS shielded, header_height, TO_CHAR(header_time::timestamp, 'YYYY-MM-DD HH24:MI:SS') AS time
-				FROM shielded_expedition.transactions 
-				LEFT JOIN shielded_expedition.blocks 
-				ON transactions.block_id = blocks.block_id 
-				WHERE code_type <> 'none' AND memo = $1 AND code_type <> 'tx_vote_proposal' AND code_type <> 'tx_init_account' 
-				ORDER BY header_height ASC LIMIT $2;",
-				[$publicKey, $maxTransactions]
-			);
-			$obj = pg_fetch_all($result, PGSQL_ASSOC);
-		}
-		$earlyTransactionsCache[$publicKey] = $obj;
-		return $obj;
-	}
-
-	function getTxDescription($tx)
-	{
-		global $txStrings;
-		$description = '';
-		if (isset($tx['shielded']))
-		{
-			$description = 'Shielded ';
-		}
-		$description .= $txStrings[$tx['code_type']] ?? $tx['code_type'];
-		return $description;
-	}
-
-	function getTxChar($tx)
-	{
-		global $txChars;
-		if (isset($tx['shielded']))
-		{
-			if ($tx['code_type'] == 'tx_transfer' || $tx['code_type'] == 'tx_transfert')
-			{
-				return 'w';
-			}
-			elseif ($tx['code_type'] == 'tx_ibc')
-			{
-				return 'x';
-			}
-		}
-		else
-		{
-			return $txChars[$tx['code_type']];
-		}
-	}
-
-	function modifyQueryString($parameter, $value)
-	{
-		$currentQueryString = $_SERVER['QUERY_STRING'];
-		$sanitizedQueryString = htmlspecialchars($currentQueryString);
-		parse_str($sanitizedQueryString, $queryParams);
-		$queryParams[$parameter] = $value;
-		$updatedQueryString = http_build_query($queryParams);
-		return '?' . $updatedQueryString;
-	}
 
 	?>
 
