@@ -133,7 +133,7 @@ require_once "similarity_shared.php";
 				else
 				{
 					$playerReport = [];
-					$playerReport['Levenshtein'] = -1;
+					$playerReport['Levenshtein'] = 999;
 					$match['matchPercent'] = 100;
 					$header = "<tr class='moniker'><td><div class='moniker'><a href='similarity.php" . modifyQueryString('identifier', $player['name']) . "'>" . $player['name'] . "</a></div>"
 						. "<div class='small'>#" . $player['rank'] . " <span>ROIDs: " . number_format($player['score']) . "</span></div></td><td>Not enough transactions: " . $player['num_transactions'] . "</td></tr>\n";
