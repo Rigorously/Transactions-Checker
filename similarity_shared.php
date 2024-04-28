@@ -67,6 +67,7 @@ function showTxFilter($txFilter)
 {
 	global $txStrings, $txChars;
 
+	$txCharStr = "";
 	if (!empty($txFilter))
 	{
 		$txCharStr = "- ";
