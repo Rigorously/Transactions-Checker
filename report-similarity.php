@@ -5,7 +5,6 @@ require_once "DamerauLevenshtein.php";
 use Oefenweb\DamerauLevenshtein\DamerauLevenshtein;
 
 require_once "includes567.php";
-require_once "txchars.php";
 require_once "similarity_shared.php";
 
 ?>
