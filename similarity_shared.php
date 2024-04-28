@@ -64,7 +64,17 @@ function showOffsetControl($offset)
 function showTxFilter($txFilter)
 {
 	global $txStrings, $txChars;
-	echo "<button class='accordion'>Transaction Type Filter</button>\n
+
+	if (!empty($txFilter))
+	{
+		$txCharStr = "- ";
+		foreach ($txFilter as $txType)
+		{
+			$txCharStr .= $txChars[$txType];
+		}
+	}
+
+	echo "<button class='accordion'>Transaction Type Filter $txCharStr</button>\n
 	<div class='panel'>\n
 	<p id='tx_filter'>\n";
 
