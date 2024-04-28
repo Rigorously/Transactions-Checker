@@ -1,24 +1,118 @@
 <?php
 
-$sessionCache = [];
+// Config
 
-function getEarlyTransactions($dbconn, $publicKey, $maxTransactions, $useDatabaseCache = false)
+// TODO Configurable ranges
+$minTransactions = 5;
+$maxTransactions = 20;
+$maxTopPlayers = 200;
+
+// Damerau–Levenshtein distance cost
+$insCost = 1;
+$delCost = 1;
+$subCost = 1;
+$transCost = 1;
+
+// Input
+$filename = strip_all(basename($_SERVER['PHP_SELF']));
+$identifier = strip_all($_GET["identifier"] ?? "");
+$playerType = strtolower(strip_all($_GET["player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
+
+$defaultMinMatch = 30;
+$paramMinMatch = strip_all($_GET["min_match"] ?? $defaultMinMatch);
+$minMatchPercent = $paramMinMatch >= 0 && $paramMinMatch <= 100 ? $paramMinMatch : $defaultMinMatch;
+
+$defaultMaxLevenshtein = 20;
+$paramMaxLevenshtein = strip_all($_GET["max_levenshtein"] ?? $defaultMaxLevenshtein);
+$maxLevenshtein = $paramMaxLevenshtein >= 0 && $paramMaxLevenshtein <= 100 ? $paramMaxLevenshtein : $defaultMaxLevenshtein;
+
+$txFilter = [];
+if (isset($_GET["tx_filter"]) && is_array($_GET["tx_filter"]))
 {
-	global $sessionCache;
+	$txFilter = $_GET["tx_filter"];
+}
+else
+{
+	$paramTxFilter = strtolower(strip_all($_GET["tx_filter"] ?? ""));
+	foreach (str_split($paramTxFilter) as $c)
+	{
+		$key = array_search($c, $txChars);
+		if ($key)
+		{
+			$txFilter[] = $key;
+		}
+	}
+}
+
+
+function showTxFilter($txFilter)
+{
+	global $txStrings, $txChars;
+	echo "<button class='accordion'>Transaction Type Filter</button>\n
+	<div class='panel'>\n
+	<p id='tx_filter'>\n";
+
+	foreach ($txStrings as $tx => $desc)
+	{
+		$char = $txChars[$tx];
+		$checked = '';
+		if (in_array($tx, $txFilter))
+		{
+			$checked = 'checked';
+		}
+		echo "<input type='checkbox' id='{$tx}' name='tx_filter[]' value='{$tx}' $checked><label for='{$tx}'>{$char} - {$desc}</label><br>\n";
+	}
+	echo "</p></div>\n";
+	echo '
+	<script>
+		var acc = document.getElementsByClassName("accordion");
+		var i;
+
+		for (i = 0; i < acc.length; i++) 
+		{
+			acc[i].addEventListener("click", function() 
+			{
+				event.preventDefault();
+				this.classList.toggle("active");
+				var panel = this.nextElementSibling;
+				if (panel.style.maxHeight) {
+					panel.style.maxHeight = null;
+				} else {
+					panel.style.maxHeight = panel.scrollHeight + "px";
+				}
+			});
+		}
+	</script>';
+}
+
+$sessionCache = [];
+$useDatabaseCache = false;
+
+function getEarlyTransactions($dbconn, string $publicKey, int $maxTransactions, array $txFilter)
+{
+	global $sessionCache, $useDatabaseCache;
 
 	if (isset($sessionCache[$publicKey]))
 	{
 		return $sessionCache[$publicKey];
 	}
 
+	$txFilter = array_map(function ($tx)
+	{
+		return "'" . $tx . "'";
+	}, $txFilter);
+
 	if ($useDatabaseCache)
 	{
+		$query = "SELECT code_type, data->>'shielded' AS shielded, header_height, TO_CHAR(header_time::timestamp, 'YYYY-MM-DD HH24:MI:SS') AS time
+			FROM shielded_expedition.early_tx 
+			WHERE memo = $1 ";
+		empty($txFilter) ? "" : $query .= " AND code_type NOT IN (" . implode(',', $txFilter) . ") ";
+		$query .= "ORDER BY header_height ASC LIMIT $2;";
+
 		$result = pg_query_params(
 			$dbconn,
-			"SELECT code_type, data->>'shielded' AS shielded, header_height, TO_CHAR(header_time::timestamp, 'YYYY-MM-DD HH24:MI:SS') AS time
-			FROM shielded_expedition.early_tx 
-			WHERE memo = $1 AND code_type <> 'tx_vote_proposal' AND code_type <> 'tx_init_account' 
-			ORDER BY header_height ASC LIMIT $2;",
+			$query,
 			[$publicKey, $maxTransactions]
 		);
 		$obj = pg_fetch_all($result, PGSQL_ASSOC);
@@ -26,21 +120,24 @@ function getEarlyTransactions($dbconn, $publicKey, $maxTransactions, $useDatabas
 
 	if (!$useDatabaseCache || count($obj) == 0)
 	{
+		$query = "SELECT code_type, data->>'shielded' AS shielded, header_height, TO_CHAR(header_time::timestamp, 'YYYY-MM-DD HH24:MI:SS') AS time
+		FROM shielded_expedition.transactions 
+		LEFT JOIN shielded_expedition.blocks 
+		ON transactions.block_id = blocks.block_id 
+		WHERE code_type <> 'none' AND memo = $1 ";
+		empty($txFilter) ? "" : $query .= " AND code_type NOT IN (" . implode(',', $txFilter) . ") ";
+		$query .= "ORDER BY header_height ASC LIMIT $2;";
+
 		$result = pg_query_params(
 			$dbconn,
-			"SELECT code_type, data->>'shielded' AS shielded, header_height, TO_CHAR(header_time::timestamp, 'YYYY-MM-DD HH24:MI:SS') AS time
-			FROM shielded_expedition.transactions 
-			LEFT JOIN shielded_expedition.blocks 
-			ON transactions.block_id = blocks.block_id 
-			WHERE code_type <> 'none' AND memo = $1 AND code_type <> 'tx_vote_proposal' AND code_type <> 'tx_init_account' 
-			ORDER BY header_height ASC LIMIT $2;",
+			$query,
 			[$publicKey, $maxTransactions]
 		);
 		$obj = pg_fetch_all($result, PGSQL_ASSOC);
 	}
 
 	$sessionCache[$publicKey] = $obj;
-	
+
 	return $obj;
 }
 

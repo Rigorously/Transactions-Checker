@@ -8,33 +8,11 @@ require_once "includes567.php";
 require_once "txchars.php";
 require_once "similarity_shared.php";
 
-$filename = strip_all(basename($_SERVER['PHP_SELF']));
-$identifier = strip_all($_GET["identifier"] ?? "");
-$playerType = strtolower(strip_all($_GET["player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
-
 if ($identifier)
 {
 	$player = getPlayer($identifier, $playerType);
 }
 
-$defaultMinMatch = 30;
-$paramMinMatch = strip_all($_GET["min_match"] ?? $defaultMinMatch);
-$minMatchPercent = $paramMinMatch >= 0 && $paramMinMatch <= 100 ? $paramMinMatch : $defaultMinMatch;
-
-$defaultMaxLevenshtein = 20;
-$paramMaxLevenshtein = strip_all($_GET["max_levenshtein"] ?? $defaultMaxLevenshtein);
-$maxLevenshtein = $paramMaxLevenshtein >= 0 && $paramMaxLevenshtein <= 100 ? $paramMaxLevenshtein : $defaultMaxLevenshtein;
-
-// TODO Configurable ranges
-$minTransactions = 5;
-$maxTransactions = 20;
-$maxTopPlayers = 200;
-
-// Damerau–Levenshtein distance cost
-$insCost = 1;
-$delCost = 1;
-$subCost = 1;
-$transCost = 1;
 ?>
 
 <html>
@@ -48,6 +26,7 @@ $transCost = 1;
 <body>
 
 	<h2>Compare the early transactions of a player with the top <?= $maxTopPlayers ?></h2>
+	<p><a href="report-similarity.php">Report of top <?= $maxTopPlayers ?></a></p>
 	<form action="<?php echo ($filename); ?>" method="get">
 		<p><label for="identifier">Moniker, address or public key:</label><input type="text" name="identifier" id="identifier" size="80" value="<?php echo ($identifier); ?>">
 		<p><label for="player_type">Player type: </label><select name="player_type" id="player_type">
@@ -61,6 +40,7 @@ $transCost = 1;
 			<?= $subCost ?> Transposition: <?= $transCost ?>
 		</p>
 		<label for="minMatchPercentSlider">Exactly matching transactions at least: </label><input type="range" min="0" max="100" value="<?= $minMatchPercent ?>" class="slider" name="min_match" id="minMatchPercentSlider"> <span id="minMatchPercentDisplay"></span>%
+		<?php showTxFilter($txFilter); ?>
 		<p><button type="submit">Show</button></p>
 		<p>The matching algorithm Damerau–Levenshtein takes into account insertions, deletions, subtitutions and
 			transpositions, each having an edit distance cost (denoted as DL from here on). The more differences between
@@ -97,7 +77,7 @@ $transCost = 1;
 			echo "<tr><td>Transfers</td><td><a class='external' href='transactions.php?address=" . $player['address'] . "&mode=transactions'>" . $player['name'] . "</a></td></tr>\n";
 			echo "</table>\n";
 
-			$earlyTransactions = getEarlyTransactions($dbconn, $player['public_key'], $maxTransactions);
+			$earlyTransactions = getEarlyTransactions($dbconn, $player['public_key'], $maxTransactions, $txFilter);
 			$thisPlayerCodeTypes = [];
 			$thisPlayerTxChars = '';
 			foreach ($earlyTransactions as $ettxid => $et)
@@ -123,7 +103,7 @@ $transCost = 1;
 					}
 					$matches = 0;
 					$numTransactions = 0;
-					$tpTransactions = getEarlyTransactions($dbconn, $tp['public_key'], $maxTransactions);
+					$tpTransactions = getEarlyTransactions($dbconn, $tp['public_key'], $maxTransactions, $txFilter);
 					$list = "";
 					$thatPlayerTxChars = '';
 					foreach ($earlyTransactions as $ettxid => $et)

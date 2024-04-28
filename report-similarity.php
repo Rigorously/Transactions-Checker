@@ -8,29 +8,6 @@ require_once "includes567.php";
 require_once "txchars.php";
 require_once "similarity_shared.php";
 
-$filename = strip_all(basename($_SERVER['PHP_SELF']));
-$identifier = strip_all($_GET["identifier"] ?? "");
-$playerType = strtolower(strip_all($_GET["player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
-
-$defaultMinMatch = 30;
-$paramMinMatch = strip_all($_GET["min_match"] ?? $defaultMinMatch);
-$minMatchPercent = $paramMinMatch >= 0 && $paramMinMatch <= 100 ? $paramMinMatch : $defaultMinMatch;
-
-$defaultMaxLevenshtein = 20;
-$paramMaxLevenshtein = strip_all($_GET["max_levenshtein"] ?? $defaultMaxLevenshtein);
-$maxLevenshtein = $paramMaxLevenshtein >= 0 && $paramMaxLevenshtein <= 100 ? $paramMaxLevenshtein : $defaultMaxLevenshtein;
-
-// TODO Configurable ranges
-$minTransactions = 5;
-$maxTransactions = 20;
-$maxTopPlayers = 200;
-
-// Damerau–Levenshtein distance cost
-$insCost = 1;
-$delCost = 1;
-$subCost = 1;
-$transCost = 1;
-
 ?>
 
 <html>
@@ -49,29 +26,17 @@ $transCost = 1;
 				<option value="crew" <?= ($playerType == 'Crew') ? 'selected' : '' ?>>Crew Member</option>
 				<option value="pilot" <?= ($playerType == 'Pilot') ? 'selected' : '' ?>>Pilot</option>
 			</select></p>
+
+		<?php showTxFilter($txFilter); ?>
+
 		<p><button type="submit">Show</button></p>
 		<p>The matching algorithm Damerau–Levenshtein takes into account insertions, deletions, subtitutions and
 			transpositions, each having an edit distance cost (denoted as DL from here on). The more differences between
 			transactions, the higher the DL. The lower the DL, the more
 			similar both transaction sequences are. Transactions that match exactly are in boldface.</p>
 	</form>
-	<script>
-		var maxLevenshteinSlider = document.getElementById("maxLevenshteinSlider");
-		var maxLevenshteinDisplay = document.getElementById("maxLevenshteinDisplay");
-		maxLevenshteinDisplay.innerHTML = maxLevenshteinSlider.value;
-		maxLevenshteinSlider.oninput = function() {
-			maxLevenshteinDisplay.innerHTML = this.value;
-		}
 
-		var slider = document.getElementById("minMatchPercentSlider");
-		var minMatchPercentDisplay = document.getElementById("minMatchPercentDisplay");
-		minMatchPercentDisplay.innerHTML = minMatchPercentSlider.value;
-		minMatchPercentSlider.oninput = function() {
-			minMatchPercentDisplay.innerHTML = this.value;
-		}
-	</script>
 	<?php
-
 	$playerReports = [];
 	$topPlayers = getTopPlayers($dbconn, $playerType, $maxTopPlayers);
 
@@ -79,7 +44,7 @@ $transCost = 1;
 	{
 		if ($player)
 		{
-			$earlyTransactions = getEarlyTransactions($dbconn, $player['public_key'], $maxTransactions);
+			$earlyTransactions = getEarlyTransactions($dbconn, $player['public_key'], $maxTransactions, $txFilter);
 			$player['num_transactions'] = count($earlyTransactions);
 			$thisPlayerCodeTypes = [];
 			$thisPlayerTxChars = '';
@@ -105,7 +70,7 @@ $transCost = 1;
 					$matches = 0;
 					$numTransactions = 0;
 
-					$tpTransactions = getEarlyTransactions($dbconn, $tp['public_key'], $maxTransactions);
+					$tpTransactions = getEarlyTransactions($dbconn, $tp['public_key'], $maxTransactions, $txFilter);
 
 					$list = "";
 					$thatPlayerTxChars = '';
@@ -192,7 +157,7 @@ $transCost = 1;
 		echo $report['header'];
 		echo "</table>";
 	}
-	
+
 	?>
 
 </body>
