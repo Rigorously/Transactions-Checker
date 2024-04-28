@@ -40,6 +40,7 @@ if ($identifier)
 			<?= $subCost ?> Transposition: <?= $transCost ?>
 		</p>
 		<label for="minMatchPercentSlider">Exactly matching transactions at least: </label><input type="range" min="0" max="100" value="<?= $minMatchPercent ?>" class="slider" name="min_match" id="minMatchPercentSlider"> <span id="minMatchPercentDisplay"></span>%
+		<?php showOffsetControl($offset); ?>
 		<?php showTxFilter($txFilter); ?>
 		<p><button type="submit">Show</button></p>
 		<p>The matching algorithm Damerau–Levenshtein takes into account insertions, deletions, subtitutions and
@@ -55,7 +56,7 @@ if ($identifier)
 			maxLevenshteinDisplay.innerHTML = this.value;
 		}
 
-		var slider = document.getElementById("minMatchPercentSlider");
+		var minMatchPercentSlider = document.getElementById("minMatchPercentSlider");
 		var minMatchPercentDisplay = document.getElementById("minMatchPercentDisplay");
 		minMatchPercentDisplay.innerHTML = minMatchPercentSlider.value;
 		minMatchPercentSlider.oninput = function() {
@@ -77,7 +78,7 @@ if ($identifier)
 			echo "<tr><td>Transfers</td><td><a class='external' href='transactions.php?address=" . $player['address'] . "&mode=transactions'>" . $player['name'] . "</a></td></tr>\n";
 			echo "</table>\n";
 
-			$earlyTransactions = getEarlyTransactions($dbconn, $player['public_key'], $maxTransactions, $txFilter);
+			$earlyTransactions = getEarlyTransactions($dbconn, $player['public_key'], $maxTransactions, $offset, $txFilter);
 			$thisPlayerCodeTypes = [];
 			$thisPlayerTxChars = '';
 			foreach ($earlyTransactions as $ettxid => $et)
@@ -103,7 +104,7 @@ if ($identifier)
 					}
 					$matches = 0;
 					$numTransactions = 0;
-					$tpTransactions = getEarlyTransactions($dbconn, $tp['public_key'], $maxTransactions, $txFilter);
+					$tpTransactions = getEarlyTransactions($dbconn, $tp['public_key'], $maxTransactions, $offset, $txFilter);
 					$list = "";
 					$thatPlayerTxChars = '';
 					foreach ($earlyTransactions as $ettxid => $et)
@@ -126,7 +127,7 @@ if ($identifier)
 						{
 							$blockMatchClass = "match";
 						}
-						$list .= "<tr><td>#$ettxid</td><td><div class='code_type $typeMatchClass'>" . $thisPlayerCodeTypes[$ettxid] . "</div><div class='block $blockMatchClass'>" . $et['header_height'] . " | " . $et['time'] . "</div>"
+						$list .= "<tr><td>#". $ettxid + $offset . "</td><td><div class='code_type $typeMatchClass'>" . $thisPlayerCodeTypes[$ettxid] . "</div><div class='block $blockMatchClass'>" . $et['header_height'] . " | " . $et['time'] . "</div>"
 							. "</td><td><div class='code_type $typeMatchClass'>" . $thatPlayerCodeType . "</div><div class='block $blockMatchClass'>" . $tpTransactions[$ettxid]['header_height'] . " | " . $tpTransactions[$ettxid]['time'] . "</div></td></tr>\n";
 					}
 					if ($numTransactions < $minTransactions)

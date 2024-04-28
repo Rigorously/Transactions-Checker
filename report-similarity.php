@@ -26,9 +26,8 @@ require_once "similarity_shared.php";
 				<option value="crew" <?= ($playerType == 'Crew') ? 'selected' : '' ?>>Crew Member</option>
 				<option value="pilot" <?= ($playerType == 'Pilot') ? 'selected' : '' ?>>Pilot</option>
 			</select></p>
-
+		<?php showOffsetControl($offset); ?>
 		<?php showTxFilter($txFilter); ?>
-
 		<p><button type="submit">Show</button></p>
 		<p>The matching algorithm Damerau–Levenshtein takes into account insertions, deletions, subtitutions and
 			transpositions, each having an edit distance cost (denoted as DL from here on). The more differences between
@@ -44,7 +43,7 @@ require_once "similarity_shared.php";
 	{
 		if ($player)
 		{
-			$earlyTransactions = getEarlyTransactions($dbconn, $player['public_key'], $maxTransactions, $txFilter);
+			$earlyTransactions = getEarlyTransactions($dbconn, $player['public_key'], $maxTransactions, $offset, $txFilter);
 			$player['num_transactions'] = count($earlyTransactions);
 			$thisPlayerCodeTypes = [];
 			$thisPlayerTxChars = '';
@@ -70,7 +69,7 @@ require_once "similarity_shared.php";
 					$matches = 0;
 					$numTransactions = 0;
 
-					$tpTransactions = getEarlyTransactions($dbconn, $tp['public_key'], $maxTransactions, $txFilter);
+					$tpTransactions = getEarlyTransactions($dbconn, $tp['public_key'], $maxTransactions, $offset, $txFilter);
 
 					$list = "";
 					$thatPlayerTxChars = '';

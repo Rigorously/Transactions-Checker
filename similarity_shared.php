@@ -26,6 +26,10 @@ $defaultMaxLevenshtein = 20;
 $paramMaxLevenshtein = strip_all($_GET["max_levenshtein"] ?? $defaultMaxLevenshtein);
 $maxLevenshtein = $paramMaxLevenshtein >= 0 && $paramMaxLevenshtein <= 100 ? $paramMaxLevenshtein : $defaultMaxLevenshtein;
 
+$defaultOffset = 0;
+$paramOffset = strip_all($_GET["offset"] ?? $defaultOffset);
+$offset = $paramOffset >= 0 && $paramOffset <= 1000 ? $paramOffset : $defaultOffset;
+
 $txFilter = [];
 if (isset($_GET["tx_filter"]) && is_array($_GET["tx_filter"]))
 {
@@ -44,6 +48,18 @@ else
 	}
 }
 
+function showOffsetControl($offset)
+{
+	echo '<label for="OffsetSlider">Offset: </label><input type="range" min="0" max="1000" value="'. $offset . '" class="slider" name="offset" id="offsetSlider"> <span id="offsetDisplay"></span> transactions';
+	echo '<script>
+		var offsetSlider = document.getElementById("offsetSlider");
+		var offsetDisplay = document.getElementById("offsetDisplay");
+		offsetDisplay.innerHTML = offsetSlider.value;
+		offsetSlider.oninput = function() {
+			offsetDisplay.innerHTML = this.value;
+		}
+		</script>';
+}
 
 function showTxFilter($txFilter)
 {
@@ -88,7 +104,7 @@ function showTxFilter($txFilter)
 $sessionCache = [];
 $useDatabaseCache = false;
 
-function getEarlyTransactions($dbconn, string $publicKey, int $maxTransactions, array $txFilter)
+function getEarlyTransactions($dbconn, string $publicKey, int $maxTransactions, int $offset, array $txFilter)
 {
 	global $sessionCache, $useDatabaseCache;
 
@@ -108,12 +124,12 @@ function getEarlyTransactions($dbconn, string $publicKey, int $maxTransactions, 
 			FROM shielded_expedition.early_tx 
 			WHERE memo = $1 ";
 		empty($txFilter) ? "" : $query .= " AND code_type NOT IN (" . implode(',', $txFilter) . ") ";
-		$query .= "ORDER BY header_height ASC LIMIT $2;";
+		$query .= "ORDER BY header_height ASC LIMIT $2 OFFSET $3;";
 
 		$result = pg_query_params(
 			$dbconn,
 			$query,
-			[$publicKey, $maxTransactions]
+			[$publicKey, $maxTransactions, $offset]
 		);
 		$obj = pg_fetch_all($result, PGSQL_ASSOC);
 	}
@@ -126,12 +142,12 @@ function getEarlyTransactions($dbconn, string $publicKey, int $maxTransactions, 
 		ON transactions.block_id = blocks.block_id 
 		WHERE code_type <> 'none' AND memo = $1 ";
 		empty($txFilter) ? "" : $query .= " AND code_type NOT IN (" . implode(',', $txFilter) . ") ";
-		$query .= "ORDER BY header_height ASC LIMIT $2;";
+		$query .= "ORDER BY header_height ASC LIMIT $2 OFFSET $3;";
 
 		$result = pg_query_params(
 			$dbconn,
 			$query,
-			[$publicKey, $maxTransactions]
+			[$publicKey, $maxTransactions, $offset]
 		);
 		$obj = pg_fetch_all($result, PGSQL_ASSOC);
 	}
