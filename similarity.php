@@ -18,7 +18,7 @@ if ($identifier)
 <html>
 
 <head>
-	<title>Similarity for <?= $player['name'] ?? $identifier ?></title>
+	<title>Similarity <?= isset($player) && $player['name'] ? 'for ' . $identifier : ' Ranking' ?></title>
 	<link rel="stylesheet" href="simple.min.css">
 	<link rel="stylesheet" href="similarity.css">
 </head>
@@ -26,7 +26,7 @@ if ($identifier)
 <body>
 
 	<h2>Compare the early transactions of a player with the top <?= $maxTopPlayers ?></h2>
-	<p><a href="report-similarity.php">Report of top <?= $maxTopPlayers ?></a></p>
+	<p><a href="report-similarity.php">Similarity Report of top <?= $maxTopPlayers ?></a> | <a href="similarity.php">Ranking</a></p>
 	<form action="<?php echo ($filename); ?>" method="get">
 		<p><label for="identifier">Moniker, address or public key:</label><input type="text" name="identifier" id="identifier" size="80" value="<?php echo ($identifier); ?>">
 		<p><label for="player_type">Player type: </label><select name="player_type" id="player_type">
