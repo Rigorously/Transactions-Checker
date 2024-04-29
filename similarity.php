@@ -77,6 +77,26 @@ if ($identifier)
 			echo "<tr><td>ROIDs</td><td>" . number_format($player['score']) . " as of $scoreboardTime</td></tr>\n";
 			echo "<tr><td>Transfers</td><td><a class='external' href='transactions.php?address=" . $player['address'] . "&mode=transactions'>" . $player['name'] . "</a></td></tr>\n";
 			echo "</table>\n";
+			
+			echo "<form>";
+			$arr = getBecomeValidator($dbconn, $player['public_key']);
+			echo "<button class='accordion'>become_validator</button><div class='panel'>\n";
+			echo "<table><tr><td>#</td><td>address</td><td>email</td><td>description</td><td>website</td><td>discord_handle</td><td>avatar</td></tr>\n";
+			foreach ($arr as $aid => $a)
+			{
+				echo "<tr><td>$aid</td><td>{$a['address']}</td><td>{$a['email']}</td><td>{$a['description']}</td><td>{$a['website']}</td><td>{$a['discord_handle']}</td><td>{$a['avatar']}</td></tr>\n";
+			}
+			echo "</table></div>";
+
+			$arr = getChangeValidatorMetadata($dbconn, $player['public_key']);
+			echo "<button class='accordion'>change_validator_metadata</button><div class='panel'>\n";
+			echo "<table><tr><td>#</td><td>validator</td><td>email</td><td>description</td><td>website</td><td>discord_handle</td><td>avatar</td></tr>\n";
+			foreach ($arr as $aid => $a)
+			{
+				echo "<tr><td>$aid</td><td>{$a['validator']}</td><td>{$a['email']}</td><td>{$a['description']}</td><td>{$a['website']}</td><td>{$a['discord_handle']}</td><td>{$a['avatar']}</td></tr>\n";
+			}
+			echo "</table></div>";
+			echo "</form>";
 
 			$earlyTransactions = getEarlyTransactions($dbconn, $player['public_key'], $maxTransactions, $offset, $txFilter);
 			$thisPlayerCodeTypes = [];

@@ -251,3 +251,29 @@ function modifyQueryString($parameter, $value)
 	$updatedQueryString = http_build_query($queryParams);
 	return '?' . $updatedQueryString;
 }
+
+function getBecomeValidator($dbconn, string $publicKey)
+{
+	$query = "SELECT data->>'address' as address, data->>'email' as email, data->>'description' as description, data->>'website' as website, data->>'discord_handle' as discord_handle, data->>'avatar' as avatar FROM shielded_expedition.transactions WHERE code_type = 'tx_become_validator' AND memo = $1;";
+
+	$result = pg_query_params(
+		$dbconn,
+		$query,
+		[$publicKey]
+	);
+	$arr = pg_fetch_all($result, PGSQL_ASSOC);
+	return $arr;
+}
+
+function getChangeValidatorMetadata($dbconn, string $publicKey)
+{
+	$query = "SELECT data->>'validator' as validator, data->>'email' as email, data->>'description' as description, data->>'website' as website, data->>'discord_handle' as discord_handle, data->>'avatar' as avatar FROM shielded_expedition.transactions WHERE code_type = 'tx_change_validator_metadata' AND memo = $1;";
+
+	$result = pg_query_params(
+		$dbconn,
+		$query,
+		[$publicKey]
+	);
+	$arr = pg_fetch_all($result, PGSQL_ASSOC);
+	return $arr;
+}
