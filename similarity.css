@@ -75,7 +75,7 @@ a.external::after {
   }
   
   .panel {
-	padding: 0 18px;
+	padding: 0 0px;
 	background-color: white;
 	max-height: 0;
 	overflow: hidden;

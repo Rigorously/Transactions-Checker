@@ -52,7 +52,7 @@ else
 
 function showOffsetControl($offset)
 {
-	echo '<label for="OffsetSlider">Offset: </label><input type="range" min="0" max="1000" value="'. $offset . '" class="slider" name="offset" id="offsetSlider"> <span id="offsetDisplay"></span> transactions';
+	echo '<label for="offsetSlider">Offset: </label><input type="range" min="0" max="1000" value="'. $offset . '" class="slider" name="offset" id="offsetSlider"> <span id="offsetDisplay"></span> transactions';
 	echo '<script>
 		var offsetSlider = document.getElementById("offsetSlider");
 		var offsetDisplay = document.getElementById("offsetDisplay");
@@ -94,23 +94,28 @@ function showTxFilter($txFilter)
 	echo "</p></div>\n";
 	echo '
 	<script>
-		var acc = document.getElementsByClassName("accordion");
-		var i;
-
-		for (i = 0; i < acc.length; i++) 
+		window.onload = function()
 		{
-			acc[i].addEventListener("click", function() 
+			var acc = document.getElementsByClassName("accordion");
+			var i;
+
+			for (i = 0; i < acc.length; i++) 
 			{
-				event.preventDefault();
-				this.classList.toggle("active");
-				var panel = this.nextElementSibling;
-				if (panel.style.maxHeight) {
-					panel.style.maxHeight = null;
-				} else {
-					panel.style.maxHeight = panel.scrollHeight + "px";
-				}
-			});
-		}
+				acc[i].addEventListener("click", function() 
+				{
+					event.preventDefault();
+					this.classList.toggle("active");
+					var panel = this.nextElementSibling;
+					if (panel.style.maxHeight) {
+						panel.style.maxHeight = null;
+						panel.style.overflow = "hidden";
+					} else {
+						panel.style.maxHeight = panel.scrollHeight + "px";
+						panel.style.overflow = "visible";
+					}
+				});
+			}
+		};
 	</script>';
 }
 

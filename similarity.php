@@ -25,8 +25,9 @@ if ($identifier)
 <body>
 
 	<h2>Compare the early transactions of a player with the top <?= $maxTopPlayers ?></h2>
-	<p><a href="report-similarity.php">Similarity Report of top <?= $maxTopPlayers ?></a> | <a href="similarity.php">Ranking</a></p>
+	<span><a href="report-similarity.php">Similarity Report of top <?= $maxTopPlayers ?></a> | <a href="similarity.php">Ranking</a></span>
 	<form action="<?php echo ($filename); ?>" method="get">
+		<input type="submit" style="border:0; padding:0; font-size:0">
 		<p><label for="identifier">Moniker, address or public key:</label><input type="text" name="identifier" id="identifier" size="80" value="<?php echo ($identifier); ?>">
 		<p><label for="player_type">Player type: </label><select name="player_type" id="player_type">
 				<option value="crew" <?= ($playerType == 'Crew') ? 'selected' : '' ?>>Crew Member</option>
@@ -34,7 +35,7 @@ if ($identifier)
 			</select>
 			<label for="maxLevenshteinSlider">Highest Damerau-Levenshtein distance: </label><input type="range" min="0" max="60" value="<?= $maxLevenshtein ?>" class="slider" name="max_levenshtein" id="maxLevenshteinSlider">
 			<span id="maxLevenshteinDisplay"></span>
-		<p>Damerau-Levenshtein edit distance cost: <br>Insertion: <?= $insCost ?> Deletion: <?= $delCost ?>
+		<p><label>Damerau-Levenshtein edit distance cost:</label>Insertion: <?= $insCost ?> Deletion: <?= $delCost ?>
 			Substitution:
 			<?= $subCost ?> Transposition: <?= $transCost ?>
 		</p>
