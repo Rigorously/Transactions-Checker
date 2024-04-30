@@ -73,7 +73,8 @@ if ($identifier)
 			echo "<tr><td>Rank</td><td>" . $player['rank'] . "</td></tr>\n";
 			echo "<tr><td>Address</td><td>" . $player['address'] . "</td></tr>\n";
 			echo "<tr><td>Public key</td><td><a class='external' href='https://extended-nebb.kintsugi.tech/player/" . $player['public_key'] . "'>" . $player['public_key'] . "</a></td></tr>\n";
-			$scoreboardTime = $playerType == 'Crew' ? "April 16th" : "March 13th";
+			//$scoreboardTime = $playerType == 'Crew' ? "April 16th" : "March 13th";
+			$scoreboardTime = "April 24th";
 			echo "<tr><td>ROIDs</td><td>" . number_format($player['score']) . " as of $scoreboardTime</td></tr>\n";
 			echo "<tr><td>Transfers</td><td><a class='external' href='transactions.php?address=" . $player['address'] . "&mode=transactions'>" . $player['name'] . "</a></td></tr>\n";
 			echo "</table>\n";

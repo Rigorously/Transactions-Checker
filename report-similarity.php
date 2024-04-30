@@ -20,6 +20,7 @@ require_once "similarity_shared.php";
 <body>
 	<h2>Report: early transaction type sequence similarity of the top <?= $maxTopPlayers ?></h2>
 	<p>The transactions types of the first 20 transactions of each top <?= $maxTopPlayers ?> are compared. This report lists the matches with the least differences. Players whose transactions match the most with another player's transactions are listed at the top. For Pilots this is less of a red flag, as some tasks involved repeating certain transaction types.</p>
+	<p>ROIDs and ranking are based on NEBB scoreboard data from April 24th.</p>
 	<form action="<?php echo ($filename); ?>" method="get">
 		<p><label for="player_type">Player type: </label><select name="player_type" id="player_type">
 				<option value="crew" <?= ($playerType == 'Crew') ? 'selected' : '' ?>>Crew Member</option>
