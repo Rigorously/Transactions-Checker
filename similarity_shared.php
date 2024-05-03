@@ -205,7 +205,7 @@ function getTopPlayers($dbconn, $playerType, $maxTopPlayers)
 		"SELECT name, address, public_key, score, rank 
 		FROM shielded_expedition.players 
 		WHERE player_type = $1
-		ORDER BY score DESC LIMIT $2;",
+		ORDER BY score DESC, rank ASC LIMIT $2;",
 		[$playerType, $maxTopPlayers]
 	);
 	$obj = pg_fetch_all($result, PGSQL_ASSOC);
