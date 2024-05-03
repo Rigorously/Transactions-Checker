@@ -240,7 +240,7 @@ if ($otherIdentifier)
 	}
 	else
 	{
-		$topPlayers = getTopPlayers($dbconn, $playerType, $maxTopPlayers);
+		$topPlayers = getTopPlayers($dbconn, $playerType, 1000);
 		echo "<table class='topPlayers'>";
 		echo "<tr class='moniker'><td><div class='rank'>Rank</div></td><td>Moniker</td><td>ROIDs</td></tr>";
 		foreach ($topPlayers as $tp)
