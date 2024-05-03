@@ -29,7 +29,23 @@ if ($otherIdentifier)
 
 <body>
 
-	<h2>Compare the early transactions of a player with the top <?= $maxTopPlayers ?></h2>
+	<?php 
+	if (isset($player) && is_array($player))
+	{
+		if (isset($otherPlayer) && is_array($otherPlayer))
+		{
+			echo "<h2>Compare {$player['name']} with {$otherPlayer['name']}</h2>";
+		}
+		else
+		{
+			echo "<h2>Compare {$player['name']} with the top $maxTopPlayers</h2>";
+		}
+	}
+	else
+	{
+		echo "<h2>Compare a Player with the top $maxTopPlayers Players</h2>";
+	}
+	?>
 	<span><a href="report-similarity.php">Similarity Report of top <?= $maxTopPlayers ?></a> | <a href="similarity.php">Ranking</a></span>
 	<form action="<?php echo ($filename); ?>" method="get">
 		<input type="submit" style="border:0; padding:0; font-size:0">
