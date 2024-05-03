@@ -18,7 +18,9 @@ $transCost = 1;
 // Input
 $filename = strip_all(basename($_SERVER['PHP_SELF']));
 $identifier = strip_all($_GET["identifier"] ?? "");
+$otherIdentifier = strip_all($_GET["other_identifier"] ?? "");
 $playerType = strtolower(strip_all($_GET["player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
+$otherPlayerType = strtolower(strip_all($_GET["other_player_type"] ?? "")) == 'pilot' ? 'Pilot' : 'Crew';
 
 $defaultMinMatch = 30;
 $paramMinMatch = strip_all($_GET["min_match"] ?? $defaultMinMatch);

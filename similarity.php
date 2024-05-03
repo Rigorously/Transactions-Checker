@@ -12,6 +12,11 @@ if ($identifier)
 	$player = getPlayer($identifier, $playerType);
 }
 
+if ($otherIdentifier)
+{
+	$otherPlayer = getPlayer($otherIdentifier, $otherPlayerType);
+}
+
 ?>
 
 <html>
@@ -33,6 +38,13 @@ if ($identifier)
 				<option value="crew" <?= ($playerType == 'Crew') ? 'selected' : '' ?>>Crew Member</option>
 				<option value="pilot" <?= ($playerType == 'Pilot') ? 'selected' : '' ?>>Pilot</option>
 			</select>
+		<hr>
+		<p><label for="other_identifier">Other Player (leave empty to compare with the top <?= $maxTopPlayers ?>):</label><input type="text" name="other_identifier" id="other_identifier" size="80" value="<?php echo ($otherIdentifier); ?>">
+		<p><label for="other_player_type">Other Player type: </label><select name="other_player_type" id="other_player_type">
+				<option value="crew" <?= ($otherPlayerType == 'Crew') ? 'selected' : '' ?>>Crew Member</option>
+				<option value="pilot" <?= ($otherPlayerType == 'Pilot') ? 'selected' : '' ?>>Pilot</option>
+			</select>
+		<hr>
 			<label for="maxLevenshteinSlider">Highest Damerau-Levenshtein distance: </label><input type="range" min="0" max="60" value="<?= $maxLevenshtein ?>" class="slider" name="max_levenshtein" id="maxLevenshteinSlider">
 			<span id="maxLevenshteinDisplay"></span>
 		<p><label>Damerau-Levenshtein edit distance cost:</label>Insertion: <?= $insCost ?> Deletion: <?= $delCost ?>
@@ -40,6 +52,7 @@ if ($identifier)
 			<?= $subCost ?> Transposition: <?= $transCost ?>
 		</p>
 		<label for="minMatchPercentSlider">Exactly matching transactions at least: </label><input type="range" min="0" max="100" value="<?= $minMatchPercent ?>" class="slider" name="min_match" id="minMatchPercentSlider"> <span id="minMatchPercentDisplay"></span>%
+		<hr>
 		<?php showOffsetControl($offset); ?>
 		<?php showTxFilter($txFilter); ?>
 		<p><button type="submit">Show</button></p>
@@ -114,7 +127,15 @@ if ($identifier)
 			}
 			else
 			{
-				$topPlayers = getTopPlayers($dbconn, $playerType, $maxTopPlayers);
+				if (isset($otherPlayer))
+				{
+					$topPlayers = [];
+					$topPlayers[] = $otherPlayer;
+				}
+				else
+				{
+					$topPlayers = getTopPlayers($dbconn, $playerType, $maxTopPlayers);
+				}
 
 				$matchPool = [];
 				foreach ($topPlayers as $tp)
@@ -179,12 +200,19 @@ if ($identifier)
 					}
 				}
 
-				usort($matchPool, "matchSort");
-				foreach ($matchPool as $m)
+				if (count($matchPool) == 0)
 				{
-					echo "<table>";
-					echo $m['table'];
-					echo "</table>";
+					echo "<p>No matches with the given parameters. Try increasing the maximum Damerau-Levenshtein distance or lowering the minimum match percentage.</p>";
+				}
+				else
+				{
+					usort($matchPool, "matchSort");
+					foreach ($matchPool as $m)
+					{
+						echo "<table>";
+						echo $m['table'];
+						echo "</table>";
+					}
 				}
 			}
 		}
