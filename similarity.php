@@ -22,7 +22,7 @@ if ($otherIdentifier)
 <html>
 
 <head>
-	<title>Similarity <?= isset($player) && $player['name'] ? 'for ' . $identifier : ' Ranking' ?></title>
+	<title>Similarity <?= isset($player['name']) ? 'for ' . $player['name'] : 'Tool' ?></title>
 	<link rel="stylesheet" href="simple.min.css">
 	<link rel="stylesheet" href="similarity.css">
 </head>
